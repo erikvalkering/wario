@@ -2,6 +2,7 @@ struct Machine {
     stack: Vec<i32>,
 }
 
+#[derive(Debug)]
 enum Instruction {
     Const(i32),
     Add,
@@ -13,6 +14,8 @@ fn interpret(code: Vec<Instruction>) {
     };
 
     for instruction in code {
+        print!("> {:?}", instruction);
+
         match instruction {
             Instruction::Const(value) => machine.stack.push(value),
             Instruction::Add => {
@@ -21,9 +24,9 @@ fn interpret(code: Vec<Instruction>) {
                 machine.stack.push(a + b);
             }
         }
-    }
 
-    println!("Result: {}", machine.stack.pop().unwrap());
+        println!(" => {:?}", machine.stack);
+    }
 }
 
 fn main() {
