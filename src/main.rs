@@ -7,13 +7,7 @@ enum Instruction {
     Add,
 }
 
-fn main() {
-    let code: Vec<Instruction> = vec![
-        Instruction::Const(1),
-        Instruction::Const(2),
-        Instruction::Add,
-    ];
-
+fn interpret(code: Vec<Instruction>) {
     let mut machine = Machine{
         stack: Vec::new(),
     };
@@ -30,4 +24,14 @@ fn main() {
     }
 
     println!("Result: {}", machine.stack.pop().unwrap());
+}
+
+fn main() {
+    let code: Vec<Instruction> = vec![
+        Instruction::Const(1),
+        Instruction::Const(2),
+        Instruction::Add,
+    ];
+
+    interpret(code);
 }
