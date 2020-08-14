@@ -21,7 +21,7 @@ impl Machine {
 
     fn interpret(self: &mut Self, code: Vec<Instruction>) {
         for instruction in code {
-            print!("> {:?}", instruction);
+            println!("> {:?}", instruction);
 
             match instruction {
                 Instruction::Const(value) => self.stack.push(value),
@@ -36,7 +36,8 @@ impl Machine {
                 }
             }
 
-            println!(" => {:?}", self.stack);
+            println!("  stack: {:?}", self.stack);
+            println!("  memory: {:?}", self.memory);
         }
     }
 }
