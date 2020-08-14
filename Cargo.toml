@@ -1,5 +1,6 @@
 [package]
 name = "wario"
+description = "WebAssembly Rust Interpreter"
 version = "0.1.0"
 authors = ["Erik Valkering <erikvalkering@gmail.com>"]
 edition = "2018"
