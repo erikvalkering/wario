@@ -16,22 +16,22 @@ enum Instruction {
     Add,
 }
 
-fn interpret(code: Vec<Instruction>) {
-    let mut machine = Machine::new();
+impl Machine {
+    fn interpret(self: &mut Self, code: Vec<Instruction>) {
+        for instruction in code {
+            print!("> {:?}", instruction);
 
-    for instruction in code {
-        print!("> {:?}", instruction);
-
-        match instruction {
-            Instruction::Const(value) => machine.stack.push(value),
-            Instruction::Add => {
-                let a = machine.stack.pop().unwrap();
-                let b = machine.stack.pop().unwrap();
-                machine.stack.push(a + b);
+            match instruction {
+                Instruction::Const(value) => self.stack.push(value),
+                Instruction::Add => {
+                    let a = self.stack.pop().unwrap();
+                    let b = self.stack.pop().unwrap();
+                    self.stack.push(a + b);
+                }
             }
-        }
 
-        println!(" => {:?}", machine.stack);
+            println!(" => {:?}", self.stack);
+        }
     }
 }
 
@@ -42,5 +42,6 @@ fn main() {
         Instruction::Add,
     ];
 
-    interpret(code);
+    let mut machine = Machine::new();
+    machine.interpret(code);
 }
