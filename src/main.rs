@@ -1,3 +1,9 @@
+#[derive(Debug)]
+enum Instruction {
+    Const(i32),
+    Add,
+}
+
 struct Machine {
     stack: Vec<i32>,
 }
@@ -8,15 +14,7 @@ impl Machine {
             stack: Vec::new(),
         }
     }
-}
 
-#[derive(Debug)]
-enum Instruction {
-    Const(i32),
-    Add,
-}
-
-impl Machine {
     fn interpret(self: &mut Self, code: Vec<Instruction>) {
         for instruction in code {
             print!("> {:?}", instruction);
