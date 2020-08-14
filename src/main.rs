@@ -2,10 +2,14 @@ struct Machine {
     stack: Vec<i32>,
 }
 
+enum Instruction {
+    Const(i32),
+}
+
 fn main() {
-    let code = vec![
-        ("const", 1),
-        ("const", 2),
+    let code: Vec<Instruction> = vec![
+        Instruction::Const(1),
+        Instruction::Const(2),
     ];
 
     let mut machine = Machine{
@@ -14,8 +18,7 @@ fn main() {
 
     for instruction in code {
         match instruction {
-            ("const", value) => machine.stack.push(value),
-            (operator, _) => eprintln!("Unknown instruction: {}", operator),
+            Instruction::Const(value) => machine.stack.push(value),
         }
     }
 }
