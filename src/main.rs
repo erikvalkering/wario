@@ -4,6 +4,13 @@ enum Instruction {
     Load(usize),
     Store(usize),
     Add,
+    LocalGet(usize),
+    Call(usize),
+}
+
+struct Function {
+    param_count: usize,
+    code: Vec<Instruction>,
 }
 
 struct Machine {
@@ -19,11 +26,12 @@ impl Machine {
         }
     }
 
-    fn interpret(self: &mut Self, code: Vec<Instruction>) {
+    fn interpret(self: &mut Self, code: &Vec<Instruction>, functions: &Vec<Function>, locals: Vec<i32>) {
         for instruction in code {
             println!("> {:?}", instruction);
+            println!("  locals: {:?}", locals);
 
-            match instruction {
+            match *instruction {
                 Instruction::Const(value) => self.stack.push(value),
 
                 Instruction::Load(address) => self.stack.push(self.memory[address]),
@@ -34,6 +42,17 @@ impl Machine {
                     let b = self.stack.pop().unwrap();
                     self.stack.push(a + b);
                 }
+
+                Instruction::LocalGet(address) => self.stack.push(locals[address]),
+
+                Instruction::Call(function_index) => {
+                    let function = &functions[function_index];
+
+                    // pop param_count parameters off the stack
+                    let fargs = self.stack.split_off(self.stack.len() - function.param_count);
+
+                    self.interpret(&function.code, &functions, fargs);
+                }
             }
 
             println!("  stack: {:?}", self.stack);
@@ -43,8 +62,21 @@ impl Machine {
 }
 
 fn main() {
+    let add_function = Function{
+        param_count: 2,
+        code: vec![
+            Instruction::LocalGet(0),
+            Instruction::LocalGet(1),
+            Instruction::Add,
+        ]
+    };
+
+    let functions = vec![add_function];
+
     let x_address = 0;
     let y_address = 1;
+    let z_address = 2;
+    let add_function_address = 0;
 
     let code: Vec<Instruction> = vec![
         Instruction::Const(1),
@@ -57,11 +89,20 @@ fn main() {
         Instruction::Add,
         Instruction::Store(y_address),
 
+        Instruction::Const(5),
+        Instruction::Const(6),
+        Instruction::Call(add_function_address),
+        Instruction::Store(z_address),
+
         Instruction::Load(x_address),
         Instruction::Load(y_address),
+        Instruction::Add,
+
+        Instruction::Load(z_address),
         Instruction::Add,
     ];
 
     let mut machine = Machine::new();
-    machine.interpret(code);
+    let locals = vec![];
+    machine.interpret(&code, &functions, locals);
 }
