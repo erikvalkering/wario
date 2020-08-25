@@ -102,7 +102,8 @@ fn main() {
         Instruction::Add,
     ];
 
-    let mut machine = Machine::new();
     let locals = vec![];
+
+    let mut machine = Machine::new();
     machine.interpret(&code, &functions, locals);
 }
