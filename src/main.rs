@@ -61,6 +61,21 @@ impl Machine {
     }
 }
 
+#[test]
+fn test_const() {
+    let code = vec![
+        Instruction::Const(42),
+    ];
+
+    let functions = vec![];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+    machine.interpret(&code, &functions, locals);
+
+    assert_eq!(machine.stack, vec![42]);
+}
+
 fn main() {
     let add_function = Function{
         param_count: 2,
