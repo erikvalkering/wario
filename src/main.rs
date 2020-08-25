@@ -78,6 +78,24 @@ fn test_const() {
     assert_eq!(machine.stack, vec![42]);
 }
 
+#[test]
+fn test_load() {
+    let code = vec![
+        Instruction::Load(0),
+    ];
+
+    let functions = vec![];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+    assert_eq!(machine.stack, vec![]);
+
+    machine.memory[0] = 42;
+    machine.interpret(&code, &functions, locals);
+
+    assert_eq!(machine.stack, vec![42]);
+}
+
 fn main() {
     let add_function = Function{
         param_count: 2,
