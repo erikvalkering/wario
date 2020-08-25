@@ -71,6 +71,8 @@ fn test_const() {
     let locals = vec![];
 
     let mut machine = Machine::new();
+    assert_eq!(machine.stack, vec![]);
+
     machine.interpret(&code, &functions, locals);
 
     assert_eq!(machine.stack, vec![42]);
