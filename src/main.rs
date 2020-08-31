@@ -202,7 +202,8 @@ fn test_call() {
     assert_eq!(machine.stack, vec![42]);
 }
 
-fn main() {
+#[test]
+fn test_complex() {
     let add_function = Function{
         param_count: 2,
         code: vec![
@@ -247,4 +248,8 @@ fn main() {
 
     let mut machine = Machine::new();
     machine.interpret(&code, &functions, locals);
+
+    assert_eq!(machine.stack, vec![21])
 }
+
+fn main() {}
