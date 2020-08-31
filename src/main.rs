@@ -241,7 +241,7 @@ fn test_complex() {
         Instruction::Add,
 
         Instruction::Load(z_address),
-        Instruction::Add,
+        Instruction::Mul,
     ];
 
     let locals = vec![];
@@ -249,7 +249,7 @@ fn test_complex() {
     let mut machine = Machine::new();
     machine.interpret(&code, &functions, locals);
 
-    assert_eq!(machine.stack, vec![21])
+    assert_eq!(machine.stack, vec![110])
 }
 
 fn main() {}
