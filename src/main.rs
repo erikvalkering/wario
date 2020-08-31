@@ -38,9 +38,9 @@ impl Machine {
                 Instruction::Store(address) => self.memory[address] = self.stack.pop().unwrap(),
 
                 Instruction::Add => {
-                    let a = self.stack.pop().unwrap();
-                    let b = self.stack.pop().unwrap();
-                    self.stack.push(a + b);
+                    let right = self.stack.pop().unwrap();
+                    let left = self.stack.pop().unwrap();
+                    self.stack.push(left + right);
                 }
 
                 Instruction::LocalGet(address) => self.stack.push(locals[address]),
