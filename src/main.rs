@@ -151,6 +151,29 @@ fn test_localget() {
     assert_eq!(machine.stack, vec![42]);
 }
 
+#[test]
+fn test_call() {
+    let code = vec![
+        Instruction::Call(0),
+    ];
+
+    let function = Function{
+        param_count: 0,
+        code: vec![
+            Instruction::Const(42),
+        ]
+    };
+
+    let functions = vec![function];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+
+    machine.interpret(&code, &functions, locals);
+
+    assert_eq!(machine.stack, vec![42]);
+}
+
 fn main() {
     let add_function = Function{
         param_count: 2,
