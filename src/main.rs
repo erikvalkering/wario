@@ -114,6 +114,27 @@ fn test_store() {
     assert_eq!(machine.memory[0], 42);
 }
 
+#[test]
+fn test_add() {
+    let a = 1;
+    let b = 2;
+
+    let code = vec![
+        Instruction::Const(a),
+        Instruction::Const(b),
+        Instruction::Add,
+    ];
+
+    let functions = vec![];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+
+    machine.interpret(&code, &functions, locals);
+
+    assert_eq!(machine.stack, vec![a + b]);
+}
+
 fn main() {
     let add_function = Function{
         param_count: 2,
