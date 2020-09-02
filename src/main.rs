@@ -11,12 +11,14 @@ enum Instruction {
 
 enum Function {
     ModuleFunction(ModuleFunction),
+    ImportFunction(ImportFunction),
 }
 
 impl Function {
     fn call(&self, machine: &mut Machine, functions: &Vec<Function>) {
         match self {
             Function::ModuleFunction(function) => function.call(machine, functions),
+            Function::ImportFunction(function) => function.call(machine, functions),
         }
     }
 }
@@ -32,6 +34,17 @@ impl ModuleFunction {
         let fargs = machine.stack.split_off(machine.stack.len() - self.param_count);
 
         machine.interpret(&self.code, &functions, fargs);
+    }
+}
+
+struct ImportFunction {
+    // param_count: usize,
+    fun: fn () -> (),
+}
+
+impl ImportFunction {
+    fn call(&self, _machine: &Machine, _functions: &Vec<Function>) {
+        (self.fun)();
     }
 }
 
@@ -210,6 +223,26 @@ fn test_call() {
     };
 
     let functions = vec![Function::ModuleFunction(function)];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+
+    machine.interpret(&code, &functions, locals);
+
+    assert_eq!(machine.stack, vec![42]);
+}
+
+#[test]
+fn test_import() {
+    let code = vec![
+        Instruction::Call(0),
+    ];
+
+    let function = ImportFunction{
+        fun: || println!("Ha!")
+    };
+
+    let functions = vec![Function::ImportFunction(function)];
     let locals = vec![];
 
     let mut machine = Machine::new();
