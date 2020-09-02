@@ -9,9 +9,30 @@ enum Instruction {
     Call(usize),
 }
 
-struct Function {
+enum Function {
+    ModuleFunction(ModuleFunction),
+}
+
+impl Function {
+    fn call(&self, machine: &mut Machine, functions: &Vec<Function>) {
+        match self {
+            Function::ModuleFunction(function) => function.call(machine, functions),
+        }
+    }
+}
+
+struct ModuleFunction {
     param_count: usize,
     code: Vec<Instruction>,
+}
+
+impl ModuleFunction {
+    fn call(&self, machine: &mut Machine, functions: &Vec<Function>) {
+        // pop param_count parameters off the stack
+        let fargs = machine.stack.split_off(machine.stack.len() - self.param_count);
+
+        machine.interpret(&self.code, &functions, fargs);
+    }
 }
 
 struct Machine {
@@ -54,11 +75,7 @@ impl Machine {
 
                 Instruction::Call(function_index) => {
                     let function = &functions[function_index];
-
-                    // pop param_count parameters off the stack
-                    let fargs = self.stack.split_off(self.stack.len() - function.param_count);
-
-                    self.interpret(&function.code, &functions, fargs);
+                    function.call(self, functions);
                 }
             }
 
@@ -185,14 +202,14 @@ fn test_call() {
         Instruction::Call(0),
     ];
 
-    let function = Function{
+    let function = ModuleFunction{
         param_count: 0,
         code: vec![
             Instruction::Const(42),
         ]
     };
 
-    let functions = vec![function];
+    let functions = vec![Function::ModuleFunction(function)];
     let locals = vec![];
 
     let mut machine = Machine::new();
@@ -204,7 +221,7 @@ fn test_call() {
 
 #[test]
 fn test_complex() {
-    let add_function = Function{
+    let add_function = ModuleFunction{
         param_count: 2,
         code: vec![
             Instruction::LocalGet(0),
@@ -213,7 +230,7 @@ fn test_complex() {
         ]
     };
 
-    let functions = vec![add_function];
+    let functions = vec![Function::ModuleFunction(add_function)];
 
     let x_address = 0;
     let y_address = 1;
