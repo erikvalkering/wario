@@ -23,12 +23,12 @@ impl ModuleFunction {
     }
 }
 
-struct ImportFunction {
+struct ImportFunction<'a> {
     // param_count: usize,
-    fun: fn () -> (),
+    fun: Box<dyn FnMut () -> () + 'a>,
 }
 
-impl ImportFunction {
+impl<'a> ImportFunction<'a> {
     fn call(&mut self) {
         (self.fun)();
     }
@@ -235,19 +235,22 @@ fn test_import() {
         Instruction::Call(0),
     ];
 
-    let function = ImportFunction{
-        fun: || println!("Ha!")
-    };
+    let mut function_was_called = false;
+    {
+        let function = ImportFunction{
+            fun: Box::new(|| { function_was_called = true; }),
+        };
 
         let module_functions = vec![];
         let mut import_functions = vec![function];
         let locals = vec![];
 
-    let mut machine = Machine::new();
+        let mut machine = Machine::new();
 
         machine.interpret(&code, &module_functions, &mut import_functions, locals);
+    }
 
-    assert_eq!(machine.stack, vec![42]);
+    assert_eq!(function_was_called, true);
 }
 
 #[test]
