@@ -9,31 +9,17 @@ enum Instruction {
     Call(usize),
 }
 
-enum Function {
-    ModuleFunction(ModuleFunction),
-    ImportFunction(ImportFunction),
-}
-
-impl Function {
-    fn call(&self, machine: &mut Machine, functions: &Vec<Function>) {
-        match self {
-            Function::ModuleFunction(function) => function.call(machine, functions),
-            Function::ImportFunction(function) => function.call(machine, functions),
-        }
-    }
-}
-
 struct ModuleFunction {
     param_count: usize,
     code: Vec<Instruction>,
 }
 
 impl ModuleFunction {
-    fn call(&self, machine: &mut Machine, functions: &Vec<Function>) {
+    fn call(&self, machine: &mut Machine, module_functions: &Vec<ModuleFunction>, import_functions: &mut Vec<ImportFunction>) {
         // pop param_count parameters off the stack
         let fargs = machine.stack.split_off(machine.stack.len() - self.param_count);
 
-        machine.interpret(&self.code, &functions, fargs);
+        machine.interpret(&self.code, module_functions, import_functions, fargs);
     }
 }
 
@@ -43,7 +29,7 @@ struct ImportFunction {
 }
 
 impl ImportFunction {
-    fn call(&self, _machine: &Machine, _functions: &Vec<Function>) {
+    fn call(&mut self) {
         (self.fun)();
     }
 }
@@ -61,7 +47,7 @@ impl Machine {
         }
     }
 
-    fn interpret(self: &mut Self, code: &Vec<Instruction>, functions: &Vec<Function>, locals: Vec<i32>) {
+    fn interpret(self: &mut Self, code: &Vec<Instruction>, module_functions: &Vec<ModuleFunction>, import_functions: &mut Vec<ImportFunction>, locals: Vec<i32>) {
         for instruction in code {
             println!("> {:?}", instruction);
             println!("  locals: {:?}", locals);
@@ -87,8 +73,12 @@ impl Machine {
                 Instruction::LocalGet(address) => self.stack.push(locals[address]),
 
                 Instruction::Call(function_index) => {
-                    let function = &functions[function_index];
-                    function.call(self, functions);
+                    if function_index < module_functions.len() {
+                        module_functions[function_index].call(self, module_functions, import_functions)
+                    }
+                    else {
+                        import_functions[function_index - module_functions.len()].call()
+                    }
                 }
             }
 
@@ -104,13 +94,14 @@ fn test_const() {
         Instruction::Const(42),
     ];
 
-    let functions = vec![];
+    let module_functions = vec![];
+    let mut import_functions = vec![];
     let locals = vec![];
 
     let mut machine = Machine::new();
     assert_eq!(machine.stack, vec![]);
 
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![42]);
 }
@@ -121,14 +112,15 @@ fn test_load() {
         Instruction::Load(0),
     ];
 
-    let functions = vec![];
+    let module_functions = vec![];
+    let mut import_functions = vec![];
     let locals = vec![];
 
     let mut machine = Machine::new();
     assert_eq!(machine.stack, vec![]);
 
     machine.memory[0] = 42;
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![42]);
 }
@@ -139,13 +131,14 @@ fn test_store() {
         Instruction::Store(0),
     ];
 
-    let functions = vec![];
+    let module_functions = vec![];
+    let mut import_functions = vec![];
     let locals = vec![];
 
     let mut machine = Machine::new();
 
     machine.stack = vec![42];
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![]);
     assert_eq!(machine.memory[0], 42);
@@ -162,12 +155,13 @@ fn test_add() {
         Instruction::Add,
     ];
 
-    let functions = vec![];
+    let module_functions = vec![];
+    let mut import_functions = vec![];
     let locals = vec![];
 
     let mut machine = Machine::new();
 
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![a + b]);
 }
@@ -183,12 +177,13 @@ fn test_mul() {
         Instruction::Mul,
     ];
 
-    let functions = vec![];
+    let module_functions = vec![];
+    let mut import_functions = vec![];
     let locals = vec![];
 
     let mut machine = Machine::new();
 
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![a * b]);
 }
@@ -199,12 +194,13 @@ fn test_localget() {
         Instruction::LocalGet(0),
     ];
 
-    let functions = vec![];
+    let module_functions = vec![];
+    let mut import_functions = vec![];
     let locals = vec![42];
 
     let mut machine = Machine::new();
 
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![42]);
 }
@@ -222,12 +218,13 @@ fn test_call() {
         ]
     };
 
-    let functions = vec![Function::ModuleFunction(function)];
+    let module_functions = vec![function];
+    let mut import_functions = vec![];
     let locals = vec![];
 
     let mut machine = Machine::new();
 
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![42]);
 }
@@ -242,12 +239,13 @@ fn test_import() {
         fun: || println!("Ha!")
     };
 
-    let functions = vec![Function::ImportFunction(function)];
-    let locals = vec![];
+        let module_functions = vec![];
+        let mut import_functions = vec![function];
+        let locals = vec![];
 
     let mut machine = Machine::new();
 
-    machine.interpret(&code, &functions, locals);
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![42]);
 }
@@ -263,7 +261,8 @@ fn test_complex() {
         ]
     };
 
-    let functions = vec![Function::ModuleFunction(add_function)];
+    let module_functions = vec![add_function];
+    let mut import_functions = vec![];
 
     let x_address = 0;
     let y_address = 1;
@@ -297,7 +296,7 @@ fn test_complex() {
     let locals = vec![];
 
     let mut machine = Machine::new();
-    machine.interpret(&code, &functions, locals);
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![110])
 }
