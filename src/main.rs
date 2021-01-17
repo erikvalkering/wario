@@ -4,6 +4,7 @@ enum Instruction {
     Load(usize),
     Store(usize),
     Add,
+    Sub,
     Mul,
     LocalGet(usize),
     Call(usize),
@@ -75,6 +76,12 @@ impl Machine {
                     let right = self.stack.pop().unwrap();
                     let left = self.stack.pop().unwrap();
                     self.stack.push(left + right);
+                }
+
+                Instruction::Sub => {
+                    let right = self.stack.pop().unwrap();
+                    let left = self.stack.pop().unwrap();
+                    self.stack.push(left - right);
                 }
 
                 Instruction::Mul => {
@@ -174,6 +181,28 @@ fn test_add() {
     machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
     assert_eq!(machine.stack, vec![a + b]);
+}
+
+#[test]
+fn test_sub() {
+    let a = 1;
+    let b = 2;
+
+    let code = vec![
+        Instruction::Const(a),
+        Instruction::Const(b),
+        Instruction::Sub,
+    ];
+
+    let module_functions = vec![];
+    let mut import_functions = vec![];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+    assert_eq!(machine.stack, vec![a - b]);
 }
 
 #[test]
