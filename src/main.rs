@@ -263,6 +263,37 @@ fn test_call_module_function() {
 }
 
 #[test]
+fn test_call_module_function_with_args() {
+    let a = 5;
+    let b = 3;
+
+    let code = vec![
+        Instruction::Const(a),
+        Instruction::Const(b),
+        Instruction::Call(0),
+    ];
+
+    let function = ModuleFunction {
+        param_count: 2,
+        code: vec![
+            Instruction::LocalGet(0),
+            Instruction::LocalGet(1),
+            Instruction::Sub,
+        ],
+    };
+
+    let module_functions = vec![function];
+    let mut import_functions = vec![];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+    assert_eq!(machine.stack, vec![a - b]);
+}
+
+#[test]
 fn test_call_import_function() {
     let code = vec![Instruction::Call(0)];
 
