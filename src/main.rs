@@ -318,6 +318,33 @@ fn test_call_import_function() {
 }
 
 #[test]
+fn test_call_import_function_with_args() {
+    let a = 5;
+    let b = 3;
+
+    let code = vec![
+        Instruction::Const(a),
+        Instruction::Const(b),
+        Instruction::Call(0),
+    ];
+
+    let function = ImportFunction {
+        param_count: 2,
+        fun: Box::new(|x, y| x - y),
+    };
+
+    let module_functions = vec![];
+    let mut import_functions = vec![function];
+    let locals = vec![];
+
+    let mut machine = Machine::new();
+
+    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+    assert_eq!(machine.stack, vec![a - b]);
+}
+
+#[test]
 fn test_complex() {
     let add_function = ModuleFunction {
         param_count: 2,
