@@ -206,7 +206,7 @@ fn test_localget() {
 }
 
 #[test]
-fn test_call() {
+fn test_call_module_function() {
     let code = vec![
         Instruction::Call(0),
     ];
@@ -230,7 +230,7 @@ fn test_call() {
 }
 
 #[test]
-fn test_import() {
+fn test_call_import_function() {
     let code = vec![
         Instruction::Call(0),
     ];
