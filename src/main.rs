@@ -15,9 +15,16 @@ struct ModuleFunction {
 }
 
 impl ModuleFunction {
-    fn call(&self, machine: &mut Machine, module_functions: &Vec<ModuleFunction>, import_functions: &mut Vec<ImportFunction>) {
+    fn call(
+        &self,
+        machine: &mut Machine,
+        module_functions: &Vec<ModuleFunction>,
+        import_functions: &mut Vec<ImportFunction>,
+    ) {
         // pop param_count parameters off the stack
-        let fargs = machine.stack.split_off(machine.stack.len() - self.param_count);
+        let fargs = machine
+            .stack
+            .split_off(machine.stack.len() - self.param_count);
 
         machine.interpret(&self.code, module_functions, import_functions, fargs);
     }
@@ -25,7 +32,7 @@ impl ModuleFunction {
 
 struct ImportFunction<'a> {
     // param_count: usize,
-    fun: Box<dyn FnMut () -> () + 'a>,
+    fun: Box<dyn FnMut() -> () + 'a>,
 }
 
 impl<'a> ImportFunction<'a> {
@@ -41,13 +48,19 @@ struct Machine {
 
 impl Machine {
     fn new() -> Self {
-        Machine{
+        Machine {
             stack: Vec::new(),
             memory: vec![0; 10],
         }
     }
 
-    fn interpret(self: &mut Self, code: &Vec<Instruction>, module_functions: &Vec<ModuleFunction>, import_functions: &mut Vec<ImportFunction>, locals: Vec<i32>) {
+    fn interpret(
+        self: &mut Self,
+        code: &Vec<Instruction>,
+        module_functions: &Vec<ModuleFunction>,
+        import_functions: &mut Vec<ImportFunction>,
+        locals: Vec<i32>,
+    ) {
         for instruction in code {
             println!("> {:?}", instruction);
             println!("  locals: {:?}", locals);
@@ -74,9 +87,12 @@ impl Machine {
 
                 Instruction::Call(function_index) => {
                     if function_index < module_functions.len() {
-                        module_functions[function_index].call(self, module_functions, import_functions)
-                    }
-                    else {
+                        module_functions[function_index].call(
+                            self,
+                            module_functions,
+                            import_functions,
+                        )
+                    } else {
                         import_functions[function_index - module_functions.len()].call()
                     }
                 }
@@ -90,9 +106,7 @@ impl Machine {
 
 #[test]
 fn test_const() {
-    let code = vec![
-        Instruction::Const(42),
-    ];
+    let code = vec![Instruction::Const(42)];
 
     let module_functions = vec![];
     let mut import_functions = vec![];
@@ -108,9 +122,7 @@ fn test_const() {
 
 #[test]
 fn test_load() {
-    let code = vec![
-        Instruction::Load(0),
-    ];
+    let code = vec![Instruction::Load(0)];
 
     let module_functions = vec![];
     let mut import_functions = vec![];
@@ -127,9 +139,7 @@ fn test_load() {
 
 #[test]
 fn test_store() {
-    let code = vec![
-        Instruction::Store(0),
-    ];
+    let code = vec![Instruction::Store(0)];
 
     let module_functions = vec![];
     let mut import_functions = vec![];
@@ -190,9 +200,7 @@ fn test_mul() {
 
 #[test]
 fn test_localget() {
-    let code = vec![
-        Instruction::LocalGet(0),
-    ];
+    let code = vec![Instruction::LocalGet(0)];
 
     let module_functions = vec![];
     let mut import_functions = vec![];
@@ -207,15 +215,11 @@ fn test_localget() {
 
 #[test]
 fn test_call_module_function() {
-    let code = vec![
-        Instruction::Call(0),
-    ];
+    let code = vec![Instruction::Call(0)];
 
-    let function = ModuleFunction{
+    let function = ModuleFunction {
         param_count: 0,
-        code: vec![
-            Instruction::Const(42),
-        ]
+        code: vec![Instruction::Const(42)],
     };
 
     let module_functions = vec![function];
@@ -231,14 +235,14 @@ fn test_call_module_function() {
 
 #[test]
 fn test_call_import_function() {
-    let code = vec![
-        Instruction::Call(0),
-    ];
+    let code = vec![Instruction::Call(0)];
 
     let mut function_was_called = false;
     {
-        let function = ImportFunction{
-            fun: Box::new(|| { function_was_called = true; }),
+        let function = ImportFunction {
+            fun: Box::new(|| {
+                function_was_called = true;
+            }),
         };
 
         let module_functions = vec![];
@@ -255,13 +259,13 @@ fn test_call_import_function() {
 
 #[test]
 fn test_complex() {
-    let add_function = ModuleFunction{
+    let add_function = ModuleFunction {
         param_count: 2,
         code: vec![
             Instruction::LocalGet(0),
             Instruction::LocalGet(1),
             Instruction::Add,
-        ]
+        ],
     };
 
     let module_functions = vec![add_function];
@@ -277,21 +281,17 @@ fn test_complex() {
         Instruction::Const(2),
         Instruction::Add,
         Instruction::Store(x_address),
-
         Instruction::Const(3),
         Instruction::Const(4),
         Instruction::Add,
         Instruction::Store(y_address),
-
         Instruction::Const(5),
         Instruction::Const(6),
         Instruction::Call(add_function_address),
         Instruction::Store(z_address),
-
         Instruction::Load(x_address),
         Instruction::Load(y_address),
         Instruction::Add,
-
         Instruction::Load(z_address),
         Instruction::Mul,
     ];
