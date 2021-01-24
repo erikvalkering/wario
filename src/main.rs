@@ -32,13 +32,19 @@ impl ModuleFunction {
 }
 
 struct ImportFunction<'a> {
-    // param_count: usize,
-    fun: Box<dyn FnMut() -> () + 'a>,
+    param_count: usize,
+    fun: Box<dyn FnMut(&[i32]) -> Option<i32> + 'a>,
 }
 
 impl<'a> ImportFunction<'a> {
-    fn call(&mut self) {
-        (self.fun)();
+    fn call(&mut self, machine: &mut Machine) {
+        let args = machine
+            .stack
+            .split_off(machine.stack.len() - self.param_count);
+
+        if let Some(result) = (self.fun)(&args) {
+            machine.stack.push(result)
+        }
     }
 }
 
@@ -100,7 +106,8 @@ impl Machine {
                             import_functions,
                         )
                     } else {
-                        import_functions[function_index - module_functions.len()].call()
+                        let function_index = function_index - module_functions.len();
+                        import_functions[function_index].call(self)
                     }
                 }
             }
@@ -300,8 +307,10 @@ fn test_call_import_function() {
     let mut function_was_called = false;
     {
         let function = ImportFunction {
-            fun: Box::new(|| {
+            param_count: 0,
+            fun: Box::new(|_: &[i32]| {
                 function_was_called = true;
+                None
             }),
         };
 
@@ -330,7 +339,7 @@ fn test_call_import_function_with_args() {
 
     let function = ImportFunction {
         param_count: 2,
-        fun: Box::new(|x, y| x - y),
+        fun: Box::new(|args: &[i32]| Some(args[0] - args[1])),
     };
 
     let module_functions = vec![];
