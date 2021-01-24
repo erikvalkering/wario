@@ -403,5 +403,3 @@ mod tests {
         assert_eq!(machine.stack, vec![110])
     }
 } // mod tests
-
-fn main() {}
