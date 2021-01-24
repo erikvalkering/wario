@@ -23,11 +23,11 @@ impl ModuleFunction {
         import_functions: &mut Vec<ImportFunction>,
     ) {
         // pop param_count parameters off the stack
-        let fargs = machine
+        let args = machine
             .stack
             .split_off(machine.stack.len() - self.param_count);
 
-        machine.interpret(&self.code, module_functions, import_functions, fargs);
+        machine.interpret(&self.code, module_functions, import_functions, args);
     }
 }
 
