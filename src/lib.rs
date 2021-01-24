@@ -20,23 +20,23 @@ impl ModuleFunction {
         &self,
         machine: &mut Machine,
         module_functions: &Vec<ModuleFunction>,
-        import_functions: &mut Vec<ImportFunction>,
+        extern_functions: &mut Vec<ExternFunction>,
     ) {
         // pop param_count parameters off the stack
         let args = machine
             .stack
             .split_off(machine.stack.len() - self.param_count);
 
-        machine.interpret(&self.code, module_functions, import_functions, args);
+        machine.interpret(&self.code, module_functions, extern_functions, args);
     }
 }
 
-pub struct ImportFunction<'a> {
+pub struct ExternFunction<'a> {
     pub param_count: usize,
     pub fun: Box<dyn FnMut(&[i32]) -> Option<i32> + 'a>,
 }
 
-impl<'a> ImportFunction<'a> {
+impl<'a> ExternFunction<'a> {
     fn call(&mut self, machine: &mut Machine) {
         let args = machine
             .stack
@@ -65,7 +65,7 @@ impl Machine {
         self: &mut Self,
         code: &Vec<Instruction>,
         module_functions: &Vec<ModuleFunction>,
-        import_functions: &mut Vec<ImportFunction>,
+        extern_functions: &mut Vec<ExternFunction>,
         locals: Vec<i32>,
     ) {
         for instruction in code {
@@ -103,11 +103,11 @@ impl Machine {
                         module_functions[function_index].call(
                             self,
                             module_functions,
-                            import_functions,
+                            extern_functions,
                         )
                     } else {
                         let function_index = function_index - module_functions.len();
-                        import_functions[function_index].call(self)
+                        extern_functions[function_index].call(self)
                     }
                 }
             }
@@ -127,13 +127,13 @@ mod tests {
         let code = vec![Instruction::Const(42)];
 
         let module_functions = vec![];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
         assert_eq!(machine.stack, vec![]);
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -143,14 +143,14 @@ mod tests {
         let code = vec![Instruction::Load(0)];
 
         let module_functions = vec![];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
         assert_eq!(machine.stack, vec![]);
 
         machine.memory[0] = 42;
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -160,13 +160,13 @@ mod tests {
         let code = vec![Instruction::Store(0)];
 
         let module_functions = vec![];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
 
         machine.stack = vec![42];
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![]);
         assert_eq!(machine.memory[0], 42);
@@ -184,12 +184,12 @@ mod tests {
         ];
 
         let module_functions = vec![];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![a + b]);
     }
@@ -206,12 +206,12 @@ mod tests {
         ];
 
         let module_functions = vec![];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![a - b]);
     }
@@ -228,12 +228,12 @@ mod tests {
         ];
 
         let module_functions = vec![];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![a * b]);
     }
@@ -243,12 +243,12 @@ mod tests {
         let code = vec![Instruction::LocalGet(0)];
 
         let module_functions = vec![];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![42];
 
         let mut machine = Machine::new();
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -263,12 +263,12 @@ mod tests {
         };
 
         let module_functions = vec![function];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -294,23 +294,23 @@ mod tests {
         };
 
         let module_functions = vec![function];
-        let mut import_functions = vec![];
+        let mut extern_functions = vec![];
         let locals = vec![];
 
         let mut machine = Machine::new();
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![a - b]);
     }
 
     #[test]
-    fn call_import_function() {
+    fn call_extern_function() {
         let code = vec![Instruction::Call(0)];
 
         let mut function_was_called = false;
         {
-            let function = ImportFunction {
+            let function = ExternFunction {
                 param_count: 0,
                 fun: Box::new(|_: &[i32]| {
                     function_was_called = true;
@@ -319,19 +319,19 @@ mod tests {
             };
 
             let module_functions = vec![];
-            let mut import_functions = vec![function];
+            let mut extern_functions = vec![function];
             let locals = vec![];
 
             let mut machine = Machine::new();
 
-            machine.interpret(&code, &module_functions, &mut import_functions, locals);
+            machine.interpret(&code, &module_functions, &mut extern_functions, locals);
         }
 
         assert_eq!(function_was_called, true);
     }
 
     #[test]
-    fn call_import_function_with_args() {
+    fn call_extern_function_with_args() {
         let a = 5;
         let b = 3;
 
@@ -340,18 +340,18 @@ mod tests {
             Instruction::Const(b),
             Instruction::Call(0),
         ];
-        let function = ImportFunction {
+        let function = ExternFunction {
             param_count: 2,
             fun: Box::new(|args: &[i32]| Some(args[0] - args[1])),
         };
 
         let module_functions = vec![];
-        let mut import_functions = vec![function];
+        let mut extern_functions = vec![function];
         let locals = vec![];
 
         let mut machine = Machine::new();
 
-        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut extern_functions, locals);
 
         assert_eq!(machine.stack, vec![a - b]);
     }
