@@ -8,7 +8,20 @@ pub enum Instruction {
     Mul,
     LocalGet(usize),
     Call(usize),
+    // TODO: br, br_if, loop, return
 }
+
+// TODO: add all four datatypes: i32, i64, f32, f64
+// TODO: load/store should have offset
+// TODO: memory.size
+// TODO: memory.grow
+// TODO: local.tee
+// TODO: local.drop
+// TODO: select
+// TODO: br_table
+// TODO: wasm parser (into Module)
+// TODO: memory initialization
+// TODO: obtain exported functions to find entry point(s)
 
 pub struct ModuleFunction {
     pub param_count: usize,
@@ -75,6 +88,7 @@ impl Machine {
             match *instruction {
                 Instruction::Const(value) => self.stack.push(value),
 
+                // TODO: Load/Store indirect (maybe to support arrays? first implement loops and conditionals?)
                 Instruction::Load(address) => self.stack.push(self.memory[address]),
                 Instruction::Store(address) => self.memory[address] = self.stack.pop().unwrap(),
 
@@ -96,6 +110,8 @@ impl Machine {
                     self.stack.push(left * right);
                 }
 
+                // TODO: Indirect addressing to support arrays?
+                // TODO: LocalSet?
                 Instruction::LocalGet(address) => self.stack.push(locals[address]),
 
                 Instruction::Call(function_index) => {
