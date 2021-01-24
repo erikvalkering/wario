@@ -122,200 +122,227 @@ impl Machine {
 mod tests {
     use super::*;
 
-#[test]
-fn test_const() {
-    let code = vec![Instruction::Const(42)];
+    #[test]
+    fn constant() {
+        let code = vec![Instruction::Const(42)];
 
-    let module_functions = vec![];
-    let mut import_functions = vec![];
-    let locals = vec![];
+        let module_functions = vec![];
+        let mut import_functions = vec![];
+        let locals = vec![];
 
-    let mut machine = Machine::new();
-    assert_eq!(machine.stack, vec![]);
+        let mut machine = Machine::new();
+        assert_eq!(machine.stack, vec![]);
 
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
-    assert_eq!(machine.stack, vec![42]);
-}
+        assert_eq!(machine.stack, vec![42]);
+    }
 
-#[test]
-fn test_load() {
-    let code = vec![Instruction::Load(0)];
+    #[test]
+    fn load() {
+        let code = vec![Instruction::Load(0)];
 
-    let module_functions = vec![];
-    let mut import_functions = vec![];
-    let locals = vec![];
+        let module_functions = vec![];
+        let mut import_functions = vec![];
+        let locals = vec![];
 
-    let mut machine = Machine::new();
-    assert_eq!(machine.stack, vec![]);
+        let mut machine = Machine::new();
+        assert_eq!(machine.stack, vec![]);
 
-    machine.memory[0] = 42;
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.memory[0] = 42;
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
-    assert_eq!(machine.stack, vec![42]);
-}
+        assert_eq!(machine.stack, vec![42]);
+    }
 
-#[test]
-fn test_store() {
-    let code = vec![Instruction::Store(0)];
+    #[test]
+    fn store() {
+        let code = vec![Instruction::Store(0)];
 
-    let module_functions = vec![];
-    let mut import_functions = vec![];
-    let locals = vec![];
+        let module_functions = vec![];
+        let mut import_functions = vec![];
+        let locals = vec![];
 
-    let mut machine = Machine::new();
+        let mut machine = Machine::new();
 
-    machine.stack = vec![42];
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.stack = vec![42];
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
-    assert_eq!(machine.stack, vec![]);
-    assert_eq!(machine.memory[0], 42);
-}
+        assert_eq!(machine.stack, vec![]);
+        assert_eq!(machine.memory[0], 42);
+    }
 
-#[test]
-fn test_add() {
-    let a = 1;
-    let b = 2;
+    #[test]
+    fn add() {
+        let a = 1;
+        let b = 2;
 
-    let code = vec![
-        Instruction::Const(a),
-        Instruction::Const(b),
-        Instruction::Add,
-    ];
+        let code = vec![
+            Instruction::Const(a),
+            Instruction::Const(b),
+            Instruction::Add,
+        ];
 
-    let module_functions = vec![];
-    let mut import_functions = vec![];
-    let locals = vec![];
+        let module_functions = vec![];
+        let mut import_functions = vec![];
+        let locals = vec![];
 
-    let mut machine = Machine::new();
+        let mut machine = Machine::new();
 
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
-    assert_eq!(machine.stack, vec![a + b]);
-}
+        assert_eq!(machine.stack, vec![a + b]);
+    }
 
-#[test]
-fn test_sub() {
-    let a = 1;
-    let b = 2;
+    #[test]
+    fn sub() {
+        let a = 1;
+        let b = 2;
 
-    let code = vec![
-        Instruction::Const(a),
-        Instruction::Const(b),
-        Instruction::Sub,
-    ];
-
-    let module_functions = vec![];
-    let mut import_functions = vec![];
-    let locals = vec![];
-
-    let mut machine = Machine::new();
-
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
-
-    assert_eq!(machine.stack, vec![a - b]);
-}
-
-#[test]
-fn test_mul() {
-    let a = 2;
-    let b = 3;
-
-    let code = vec![
-        Instruction::Const(a),
-        Instruction::Const(b),
-        Instruction::Mul,
-    ];
-
-    let module_functions = vec![];
-    let mut import_functions = vec![];
-    let locals = vec![];
-
-    let mut machine = Machine::new();
-
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
-
-    assert_eq!(machine.stack, vec![a * b]);
-}
-
-#[test]
-fn test_localget() {
-    let code = vec![Instruction::LocalGet(0)];
-
-    let module_functions = vec![];
-    let mut import_functions = vec![];
-    let locals = vec![42];
-
-    let mut machine = Machine::new();
-
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
-
-    assert_eq!(machine.stack, vec![42]);
-}
-
-#[test]
-fn test_call_module_function() {
-    let code = vec![Instruction::Call(0)];
-
-    let function = ModuleFunction {
-        param_count: 0,
-        code: vec![Instruction::Const(42)],
-    };
-
-    let module_functions = vec![function];
-    let mut import_functions = vec![];
-    let locals = vec![];
-
-    let mut machine = Machine::new();
-
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
-
-    assert_eq!(machine.stack, vec![42]);
-}
-
-#[test]
-fn test_call_module_function_with_args() {
-    let a = 5;
-    let b = 3;
-
-    let code = vec![
-        Instruction::Const(a),
-        Instruction::Const(b),
-        Instruction::Call(0),
-    ];
-
-    let function = ModuleFunction {
-        param_count: 2,
-        code: vec![
-            Instruction::LocalGet(0),
-            Instruction::LocalGet(1),
+        let code = vec![
+            Instruction::Const(a),
+            Instruction::Const(b),
             Instruction::Sub,
-        ],
-    };
+        ];
 
-    let module_functions = vec![function];
-    let mut import_functions = vec![];
-    let locals = vec![];
+        let module_functions = vec![];
+        let mut import_functions = vec![];
+        let locals = vec![];
 
-    let mut machine = Machine::new();
+        let mut machine = Machine::new();
 
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
-    assert_eq!(machine.stack, vec![a - b]);
-}
+        assert_eq!(machine.stack, vec![a - b]);
+    }
 
-#[test]
-fn test_call_import_function() {
-    let code = vec![Instruction::Call(0)];
+    #[test]
+    fn mul() {
+        let a = 2;
+        let b = 3;
 
-    let mut function_was_called = false;
-    {
-        let function = ImportFunction {
+        let code = vec![
+            Instruction::Const(a),
+            Instruction::Const(b),
+            Instruction::Mul,
+        ];
+
+        let module_functions = vec![];
+        let mut import_functions = vec![];
+        let locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+        assert_eq!(machine.stack, vec![a * b]);
+    }
+
+    #[test]
+    fn localget() {
+        let code = vec![Instruction::LocalGet(0)];
+
+        let module_functions = vec![];
+        let mut import_functions = vec![];
+        let locals = vec![42];
+
+        let mut machine = Machine::new();
+
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+        assert_eq!(machine.stack, vec![42]);
+    }
+
+    #[test]
+    fn call_module_function() {
+        let code = vec![Instruction::Call(0)];
+
+        let function = ModuleFunction {
             param_count: 0,
-            fun: Box::new(|_: &[i32]| {
-                function_was_called = true;
-                None
-            }),
+            code: vec![Instruction::Const(42)],
+        };
+
+        let module_functions = vec![function];
+        let mut import_functions = vec![];
+        let locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+        assert_eq!(machine.stack, vec![42]);
+    }
+
+    #[test]
+    fn call_module_function_with_args() {
+        let a = 5;
+        let b = 3;
+
+        let code = vec![
+            Instruction::Const(a),
+            Instruction::Const(b),
+            Instruction::Call(0),
+        ];
+
+        let function = ModuleFunction {
+            param_count: 2,
+            code: vec![
+                Instruction::LocalGet(0),
+                Instruction::LocalGet(1),
+                Instruction::Sub,
+            ],
+        };
+
+        let module_functions = vec![function];
+        let mut import_functions = vec![];
+        let locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+        assert_eq!(machine.stack, vec![a - b]);
+    }
+
+    #[test]
+    fn call_import_function() {
+        let code = vec![Instruction::Call(0)];
+
+        let mut function_was_called = false;
+        {
+            let function = ImportFunction {
+                param_count: 0,
+                fun: Box::new(|_: &[i32]| {
+                    function_was_called = true;
+                    None
+                }),
+            };
+
+            let module_functions = vec![];
+            let mut import_functions = vec![function];
+            let locals = vec![];
+
+            let mut machine = Machine::new();
+
+            machine.interpret(&code, &module_functions, &mut import_functions, locals);
+        }
+
+        assert_eq!(function_was_called, true);
+    }
+
+    #[test]
+    fn call_import_function_with_args() {
+        let a = 5;
+        let b = 3;
+
+        let code = vec![
+            Instruction::Const(a),
+            Instruction::Const(b),
+            Instruction::Call(0),
+        ];
+        let function = ImportFunction {
+            param_count: 2,
+            fun: Box::new(|args: &[i32]| Some(args[0] - args[1])),
         };
 
         let module_functions = vec![];
@@ -325,84 +352,56 @@ fn test_call_import_function() {
         let mut machine = Machine::new();
 
         machine.interpret(&code, &module_functions, &mut import_functions, locals);
+
+        assert_eq!(machine.stack, vec![a - b]);
     }
 
-    assert_eq!(function_was_called, true);
-}
+    #[test]
+    fn complex() {
+        let add_function = ModuleFunction {
+            param_count: 2,
+            code: vec![
+                Instruction::LocalGet(0),
+                Instruction::LocalGet(1),
+                Instruction::Add,
+            ],
+        };
 
-#[test]
-fn test_call_import_function_with_args() {
-    let a = 5;
-    let b = 3;
+        let module_functions = vec![add_function];
+        let mut import_functions = vec![];
 
-    let code = vec![
-        Instruction::Const(a),
-        Instruction::Const(b),
-        Instruction::Call(0),
-    ];
+        let x_address = 0;
+        let y_address = 1;
+        let z_address = 2;
+        let add_function_address = 0;
 
-    let function = ImportFunction {
-        param_count: 2,
-        fun: Box::new(|args: &[i32]| Some(args[0] - args[1])),
-    };
-
-    let module_functions = vec![];
-    let mut import_functions = vec![function];
-    let locals = vec![];
-
-    let mut machine = Machine::new();
-
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
-
-    assert_eq!(machine.stack, vec![a - b]);
-}
-
-#[test]
-fn test_complex() {
-    let add_function = ModuleFunction {
-        param_count: 2,
-        code: vec![
-            Instruction::LocalGet(0),
-            Instruction::LocalGet(1),
+        let code: Vec<Instruction> = vec![
+            Instruction::Const(1),
+            Instruction::Const(2),
             Instruction::Add,
-        ],
-    };
+            Instruction::Store(x_address),
+            Instruction::Const(3),
+            Instruction::Const(4),
+            Instruction::Add,
+            Instruction::Store(y_address),
+            Instruction::Const(5),
+            Instruction::Const(6),
+            Instruction::Call(add_function_address),
+            Instruction::Store(z_address),
+            Instruction::Load(x_address),
+            Instruction::Load(y_address),
+            Instruction::Add,
+            Instruction::Load(z_address),
+            Instruction::Mul,
+        ];
 
-    let module_functions = vec![add_function];
-    let mut import_functions = vec![];
+        let locals = vec![];
 
-    let x_address = 0;
-    let y_address = 1;
-    let z_address = 2;
-    let add_function_address = 0;
+        let mut machine = Machine::new();
+        machine.interpret(&code, &module_functions, &mut import_functions, locals);
 
-    let code: Vec<Instruction> = vec![
-        Instruction::Const(1),
-        Instruction::Const(2),
-        Instruction::Add,
-        Instruction::Store(x_address),
-        Instruction::Const(3),
-        Instruction::Const(4),
-        Instruction::Add,
-        Instruction::Store(y_address),
-        Instruction::Const(5),
-        Instruction::Const(6),
-        Instruction::Call(add_function_address),
-        Instruction::Store(z_address),
-        Instruction::Load(x_address),
-        Instruction::Load(y_address),
-        Instruction::Add,
-        Instruction::Load(z_address),
-        Instruction::Mul,
-    ];
-
-    let locals = vec![];
-
-    let mut machine = Machine::new();
-    machine.interpret(&code, &module_functions, &mut import_functions, locals);
-
-    assert_eq!(machine.stack, vec![110])
-}
+        assert_eq!(machine.stack, vec![110])
+    }
 } // mod tests
 
 fn main() {}
