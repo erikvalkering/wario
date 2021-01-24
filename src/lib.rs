@@ -1,5 +1,5 @@
 #[derive(Debug)]
-enum Instruction {
+pub enum Instruction {
     Const(i32),
     Load(usize),
     Store(usize),
@@ -10,9 +10,9 @@ enum Instruction {
     Call(usize),
 }
 
-struct ModuleFunction {
-    param_count: usize,
-    code: Vec<Instruction>,
+pub struct ModuleFunction {
+    pub param_count: usize,
+    pub code: Vec<Instruction>,
 }
 
 impl ModuleFunction {
@@ -31,9 +31,9 @@ impl ModuleFunction {
     }
 }
 
-struct ImportFunction<'a> {
-    param_count: usize,
-    fun: Box<dyn FnMut(&[i32]) -> Option<i32> + 'a>,
+pub struct ImportFunction<'a> {
+    pub param_count: usize,
+    pub fun: Box<dyn FnMut(&[i32]) -> Option<i32> + 'a>,
 }
 
 impl<'a> ImportFunction<'a> {
@@ -48,20 +48,20 @@ impl<'a> ImportFunction<'a> {
     }
 }
 
-struct Machine {
-    stack: Vec<i32>,
-    memory: Vec<i32>,
+pub struct Machine {
+    pub stack: Vec<i32>,
+    pub memory: Vec<i32>,
 }
 
 impl Machine {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Machine {
             stack: Vec::new(),
             memory: vec![0; 10],
         }
     }
 
-    fn interpret(
+    pub fn interpret(
         self: &mut Self,
         code: &Vec<Instruction>,
         module_functions: &Vec<ModuleFunction>,
