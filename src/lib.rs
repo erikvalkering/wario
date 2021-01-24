@@ -118,6 +118,10 @@ impl Machine {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
 #[test]
 fn test_const() {
     let code = vec![Instruction::Const(42)];
@@ -399,5 +403,6 @@ fn test_complex() {
 
     assert_eq!(machine.stack, vec![110])
 }
+} // mod tests
 
 fn main() {}
