@@ -13,7 +13,7 @@ pub enum Instruction {
     Break(usize),
     BreakIf(usize),
     Block(Vec<Instruction>),
-    // TODO: loop
+    Loop(Vec<Instruction>),
 }
 
 #[derive(Debug)]
@@ -178,6 +178,19 @@ impl Machine {
                         }
                     }
                 }
+
+                Instruction::Loop(loop_code) => loop {
+                    match self.execute(loop_code, module_functions, extern_functions, locals) {
+                        None => {}
+
+                        Some(ControlFlow::Return) => return Some(ControlFlow::Return),
+                        Some(ControlFlow::Break(level)) => {
+                            if level > 0 {
+                                return Some(ControlFlow::Break(level - 1));
+                            }
+                        }
+                    }
+                },
             }
 
             println!("  stack: {:?}", self.stack);
