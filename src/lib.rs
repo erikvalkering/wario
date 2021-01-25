@@ -559,4 +559,40 @@ mod tests {
 
         assert_eq!(machine.stack, vec![]);
     }
+
+    #[test]
+    fn loop_statement() {
+        // int i = 0;
+        // while (true) {
+        //   if (i == 4) break;
+        //   "push 42"
+        //   i++;
+        // }
+
+        let code = vec![
+            Instruction::Const(0),
+            Instruction::Store(0),
+            Instruction::Loop(vec![
+                Instruction::Load(0),
+                Instruction::Const(4),
+                Instruction::Eq,
+                Instruction::BreakIf(1),
+                Instruction::Const(42),
+                Instruction::Load(0),
+                Instruction::Const(1),
+                Instruction::Add,
+                Instruction::Store(0),
+            ]),
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let mut locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+
+        assert_eq!(machine.stack, vec![42, 42, 42, 42]);
+    }
 } // mod tests
