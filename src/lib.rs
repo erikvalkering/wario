@@ -22,6 +22,16 @@ pub enum Instruction {
 // TODO: wasm parser (into Module)
 // TODO: memory initialization
 // TODO: obtain exported functions to find entry point(s)
+// TODO: what about local memory, like the call frame
+//       For example:
+//
+//       auto foo() {
+//         int a[20];
+//         for (auto &e : a)
+//           e = 0.0;
+//       }
+//
+//       Will this set the size of the local memory to 20?
 
 pub struct ModuleFunction {
     pub param_count: usize,
