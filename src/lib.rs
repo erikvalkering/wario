@@ -9,6 +9,7 @@ pub enum Instruction {
     LocalGet(usize),
     Call(usize),
     Break(usize),
+    Block(Vec<Instruction>),
     // TODO: br_if, loop, return
 }
 
@@ -146,6 +147,19 @@ impl Machine {
                 }
 
                 Instruction::Break(level) => return Some(Break { level: *level }),
+
+                Instruction::Block(block_code) => {
+                    if let Some(Break { level }) = self.execute(
+                        block_code,
+                        module_functions,
+                        extern_functions,
+                        locals,
+                    ) {
+                        if level > 0 {
+                            return Some(Break { level: level - 1 });
+                        }
+                    }
+                }
             }
 
             println!("  stack: {:?}", self.stack);
