@@ -9,7 +9,7 @@ pub enum Instruction {
     LocalGet(usize),
     Call(usize),
     Break(usize),
-    // TODO: br, br_if, loop, return
+    // TODO: br_if, loop, return
 }
 
 #[derive(Debug)]
