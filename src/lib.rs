@@ -499,4 +499,23 @@ mod tests {
 
         assert_eq!(machine.stack, vec![42]);
     }
+
+    #[test]
+    fn simple_break_if() {
+        let code = vec![
+            Instruction::Const(1),
+            Instruction::BreakIf(0),
+            Instruction::Const(45),
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let mut locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+
+        assert_eq!(machine.stack, vec![]);
+    }
 } // mod tests
