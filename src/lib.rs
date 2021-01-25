@@ -411,4 +411,50 @@ mod tests {
 
         assert_eq!(machine.stack, vec![42]);
     }
+
+    #[test]
+    fn nested_break_single() {
+        let code = vec![
+            Instruction::Const(42),
+            Instruction::Block(vec![
+                Instruction::Break(0),
+                Instruction::Const(43),
+                Instruction::Const(44),
+            ]),
+            Instruction::Const(45),
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, locals);
+
+        assert_eq!(machine.stack, vec![42, 45]);
+    }
+
+    #[test]
+    fn nested_break_double() {
+        let code = vec![
+            Instruction::Const(42),
+            Instruction::Block(vec![
+                Instruction::Break(1),
+                Instruction::Const(43),
+                Instruction::Const(44),
+            ]),
+            Instruction::Const(45),
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, locals);
+
+        assert_eq!(machine.stack, vec![42]);
+    }
 } // mod tests
