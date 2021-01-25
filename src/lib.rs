@@ -381,4 +381,24 @@ mod tests {
 
         assert_eq!(machine.stack, vec![a - b]);
     }
+
+    #[test]
+    fn simple_break() {
+        let code = vec![
+            Instruction::Const(42),
+            Instruction::Break(0),
+            Instruction::Const(43),
+            Instruction::Const(44),
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, locals);
+
+        assert_eq!(machine.stack, vec![42]);
+    }
 } // mod tests
