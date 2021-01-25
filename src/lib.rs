@@ -412,6 +412,29 @@ mod tests {
     }
 
     #[test]
+    fn return_statement() {
+        let code = vec![
+            Instruction::Const(42),
+            Instruction::Block(vec![
+                Instruction::Return,
+                Instruction::Const(43),
+                Instruction::Const(44),
+            ]),
+            Instruction::Const(45),
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let mut locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+
+        assert_eq!(machine.stack, vec![42]);
+    }
+
+    #[test]
     fn simple_break() {
         let code = vec![
             Instruction::Const(42),
@@ -460,29 +483,6 @@ mod tests {
             Instruction::Const(42),
             Instruction::Block(vec![
                 Instruction::Break(1),
-                Instruction::Const(43),
-                Instruction::Const(44),
-            ]),
-            Instruction::Const(45),
-        ];
-
-        let module_functions = vec![];
-        let mut extern_functions = vec![];
-        let mut locals = vec![];
-
-        let mut machine = Machine::new();
-
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
-
-        assert_eq!(machine.stack, vec![42]);
-    }
-
-    #[test]
-    fn return_statement() {
-        let code = vec![
-            Instruction::Const(42),
-            Instruction::Block(vec![
-                Instruction::Return,
                 Instruction::Const(43),
                 Instruction::Const(44),
             ]),
