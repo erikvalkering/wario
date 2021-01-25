@@ -10,8 +10,9 @@ pub enum Instruction {
     Call(usize),
     Return,
     Break(usize),
+    BreakIf(usize),
     Block(Vec<Instruction>),
-    // TODO: br_if, loop
+    // TODO: loop
 }
 
 #[derive(Debug)]
@@ -150,6 +151,13 @@ impl Machine {
 
                 Instruction::Return => return Some(ControlFlow::Return),
                 Instruction::Break(level) => return Some(ControlFlow::Break(*level)),
+                Instruction::BreakIf(level) => {
+                    let condition = self.stack.pop().unwrap();
+
+                    if condition != 0 {
+                        return Some(ControlFlow::Break(*level));
+                    }
+                }
 
                 Instruction::Block(block_code) => {
                     match self.execute(block_code, module_functions, extern_functions, locals) {
