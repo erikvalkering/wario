@@ -573,6 +573,8 @@ mod tests {
         assert_eq!(machine.stack, vec![]);
     }
 
+    // TODO: test for negatives of branch_if
+
     #[test]
     fn loop_statement() {
         // int i = 0;
