@@ -8,14 +8,16 @@ pub enum Instruction {
     Mul,
     LocalGet(usize),
     Call(usize),
+    Return,
     Break(usize),
     Block(Vec<Instruction>),
-    // TODO: br_if, loop, return
+    // TODO: br_if, loop
 }
 
 #[derive(Debug)]
-pub struct Break {
-    level: usize,
+pub enum ControlFlow {
+    Return,
+    Break(usize),
 }
 
 // TODO: add all four datatypes: i32, i64, f32, f64
@@ -97,7 +99,7 @@ impl Machine {
         module_functions: &Vec<ModuleFunction>,
         extern_functions: &mut Vec<ExternFunction>,
         locals: &mut Vec<i32>,
-    ) -> Option<Break> {
+    ) -> Option<ControlFlow> {
         for instruction in code {
             println!("> {:?}", instruction);
             println!("  locals: {:?}", locals);
@@ -146,17 +148,18 @@ impl Machine {
                     }
                 }
 
-                Instruction::Break(level) => return Some(Break { level: *level }),
+                Instruction::Return => return Some(ControlFlow::Return),
+                Instruction::Break(level) => return Some(ControlFlow::Break(*level)),
 
                 Instruction::Block(block_code) => {
-                    if let Some(Break { level }) = self.execute(
-                        block_code,
-                        module_functions,
-                        extern_functions,
-                        locals,
-                    ) {
-                        if level > 0 {
-                            return Some(Break { level: level - 1 });
+                    match self.execute(block_code, module_functions, extern_functions, locals) {
+                        None => {}
+
+                        Some(ControlFlow::Return) => return Some(ControlFlow::Return),
+                        Some(ControlFlow::Break(level)) => {
+                            if level > 0 {
+                                return Some(ControlFlow::Break(level - 1));
+                            }
                         }
                     }
                 }
@@ -457,6 +460,29 @@ mod tests {
             Instruction::Const(42),
             Instruction::Block(vec![
                 Instruction::Break(1),
+                Instruction::Const(43),
+                Instruction::Const(44),
+            ]),
+            Instruction::Const(45),
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let mut locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+
+        assert_eq!(machine.stack, vec![42]);
+    }
+
+    #[test]
+    fn return_statement() {
+        let code = vec![
+            Instruction::Const(42),
+            Instruction::Block(vec![
+                Instruction::Return,
                 Instruction::Const(43),
                 Instruction::Const(44),
             ]),
