@@ -8,7 +8,13 @@ pub enum Instruction {
     Mul,
     LocalGet(usize),
     Call(usize),
+    Break(usize),
     // TODO: br, br_if, loop, return
+}
+
+#[derive(Debug)]
+pub struct Break {
+    level: usize,
 }
 
 // TODO: add all four datatypes: i32, i64, f32, f64
@@ -90,7 +96,7 @@ impl Machine {
         module_functions: &Vec<ModuleFunction>,
         extern_functions: &mut Vec<ExternFunction>,
         locals: Vec<i32>,
-    ) {
+    ) -> Option<Break> {
         for instruction in code {
             println!("> {:?}", instruction);
             println!("  locals: {:?}", locals);
@@ -136,11 +142,15 @@ impl Machine {
                         extern_functions[function_index].call(self)
                     }
                 }
+
+                Instruction::Break(level) => return Some(Break { level }),
             }
 
             println!("  stack: {:?}", self.stack);
             println!("  memory: {:?}", self.memory);
         }
+
+        None
     }
 }
 
