@@ -101,12 +101,12 @@ impl Machine {
             println!("> {:?}", instruction);
             println!("  locals: {:?}", locals);
 
-            match *instruction {
-                Instruction::Const(value) => self.stack.push(value),
+            match instruction {
+                Instruction::Const(value) => self.stack.push(*value),
 
                 // TODO: Load/Store indirect (maybe to support arrays? first implement loops and conditionals?)
-                Instruction::Load(address) => self.stack.push(self.memory[address]),
-                Instruction::Store(address) => self.memory[address] = self.stack.pop().unwrap(),
+                Instruction::Load(address) => self.stack.push(self.memory[*address]),
+                Instruction::Store(address) => self.memory[*address] = self.stack.pop().unwrap(),
 
                 Instruction::Add => {
                     let right = self.stack.pop().unwrap();
@@ -128,9 +128,11 @@ impl Machine {
 
                 // TODO: Indirect addressing to support arrays?
                 // TODO: LocalSet?
-                Instruction::LocalGet(address) => self.stack.push(locals[address]),
+                Instruction::LocalGet(address) => self.stack.push(locals[*address]),
 
                 Instruction::Call(function_index) => {
+                    let function_index = *function_index;
+
                     if function_index < module_functions.len() {
                         module_functions[function_index].call(
                             self,
@@ -143,7 +145,7 @@ impl Machine {
                     }
                 }
 
-                Instruction::Break(level) => return Some(Break { level }),
+                Instruction::Break(level) => return Some(Break { level: *level }),
             }
 
             println!("  stack: {:?}", self.stack);
