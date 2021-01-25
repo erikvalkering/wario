@@ -6,6 +6,7 @@ pub enum Instruction {
     Add,
     Sub,
     Mul,
+    Eq,
     LocalGet(usize),
     Call(usize),
     Return,
@@ -128,6 +129,12 @@ impl Machine {
                     let right = self.stack.pop().unwrap();
                     let left = self.stack.pop().unwrap();
                     self.stack.push(left * right);
+                }
+
+                Instruction::Eq => {
+                    let right = self.stack.pop().unwrap();
+                    let left = self.stack.pop().unwrap();
+                    self.stack.push((left == right) as i32);
                 }
 
                 // TODO: Indirect addressing to support arrays?
@@ -299,6 +306,32 @@ mod tests {
         machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![a * b]);
+    }
+
+    #[test]
+    fn eq() {
+        let a = 2;
+        let b = 3;
+        let c = 3;
+
+        let code = vec![
+            Instruction::Const(a),
+            Instruction::Const(b),
+            Instruction::Eq,
+            Instruction::Const(b),
+            Instruction::Const(c),
+            Instruction::Eq,
+        ];
+
+        let module_functions = vec![];
+        let mut extern_functions = vec![];
+        let mut locals = vec![];
+
+        let mut machine = Machine::new();
+
+        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+
+        assert_eq!(machine.stack, vec![(a == b) as i32, (b == c) as i32]);
     }
 
     #[test]
