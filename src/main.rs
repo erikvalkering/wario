@@ -21,14 +21,29 @@ fn main() {
     ];
 
     // fn increment(value: i32) {
-    //   value + 1
+    //   if value == 80 {
+    //     0
+    //   }
+    //   else {
+    //     value + 1
+    //   }
     // }
     let move_player = ModuleFunction {
         param_count: 1,
         code: vec![
             Instruction::LocalGet(0),
-            Instruction::Const(1),
-            Instruction::Add,
+            Instruction::Const(80),
+            Instruction::Eq,
+            Instruction::Block(vec![
+                Instruction::Block(vec![
+                    Instruction::BreakIf(0),
+                    Instruction::LocalGet(0),
+                    Instruction::Const(1),
+                    Instruction::Add,
+                    Instruction::Break(1),
+                ]),
+                Instruction::Const(0),
+            ]),
         ],
     };
 
