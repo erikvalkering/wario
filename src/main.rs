@@ -1,4 +1,4 @@
-use wario::{ExternFunction, Instruction, Machine};
+use wario::{ExternFunction, Instruction, Machine, ModuleFunction};
 
 fn main() {
     // int i = 0;
@@ -13,13 +13,24 @@ fn main() {
         Instruction::Store(0),
         Instruction::Loop(vec![
             Instruction::Load(0),
-            Instruction::Call(0),
+            Instruction::Call(1),
             Instruction::Load(0),
-            Instruction::Const(1),
-            Instruction::Add,
+            Instruction::Call(0),
             Instruction::Store(0),
         ]),
     ];
+
+    // fn increment(value: i32) {
+    //   value + 1
+    // }
+    let increment = ModuleFunction {
+        param_count: 1,
+        code: vec![
+            Instruction::LocalGet(0),
+            Instruction::Const(1),
+            Instruction::Add,
+        ],
+    };
 
     let display = ExternFunction {
         param_count: 1,
@@ -29,7 +40,7 @@ fn main() {
         }),
     };
 
-    let module_functions = vec![];
+    let module_functions = vec![increment];
     let mut extern_functions = vec![display];
     let mut locals = vec![];
 
