@@ -23,7 +23,7 @@ fn main() {
     // fn increment(value: i32) {
     //   value + 1
     // }
-    let increment = ModuleFunction {
+    let move_player = ModuleFunction {
         param_count: 1,
         code: vec![
             Instruction::LocalGet(0),
@@ -32,7 +32,7 @@ fn main() {
         ],
     };
 
-    let display = ExternFunction {
+    let display_player = ExternFunction {
         param_count: 1,
         fun: Box::new(|args: &[i32]| {
             println!("{} B-)", " ".repeat(args[0] as usize));
@@ -40,8 +40,8 @@ fn main() {
         }),
     };
 
-    let module_functions = vec![increment];
-    let mut extern_functions = vec![display];
+    let module_functions = vec![move_player];
+    let mut extern_functions = vec![display_player];
     let mut locals = vec![];
 
     let mut machine = Machine::new();
