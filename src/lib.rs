@@ -557,6 +557,9 @@ mod tests {
     #[test]
     fn simple_break_if() {
         let code = vec![
+            Instruction::Const(0),
+            Instruction::BreakIf(0),
+            Instruction::Const(42),
             Instruction::Const(1),
             Instruction::BreakIf(0),
             Instruction::Const(45),
@@ -570,10 +573,8 @@ mod tests {
 
         machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
 
-        assert_eq!(machine.stack, vec![]);
+        assert_eq!(machine.stack, vec![42]);
     }
-
-    // TODO: test for negatives of branch_if
 
     #[test]
     fn loop_statement() {
