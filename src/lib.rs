@@ -85,6 +85,7 @@ impl<'a> ExternFunction<'a> {
 pub struct Machine {
     pub stack: Vec<i32>,
     pub memory: Vec<i32>,
+    pub debugging: bool,
 }
 
 impl Machine {
@@ -92,6 +93,7 @@ impl Machine {
         Machine {
             stack: Vec::new(),
             memory: vec![0; 10],
+            debugging: true,
         }
     }
 
@@ -103,8 +105,10 @@ impl Machine {
         locals: &mut Vec<i32>,
     ) -> Option<ControlFlow> {
         for instruction in code {
-            println!("> {:?}", instruction);
-            println!("  locals: {:?}", locals);
+            if self.debugging {
+                println!("> {:?}", instruction);
+                println!("  locals: {:?}", locals);
+            }
 
             match instruction {
                 Instruction::Const(value) => self.stack.push(*value),
@@ -193,8 +197,10 @@ impl Machine {
                 },
             }
 
-            println!("  stack: {:?}", self.stack);
-            println!("  memory: {:?}", self.memory);
+            if self.debugging {
+                println!("  stack: {:?}", self.stack);
+                println!("  memory: {:?}", self.memory);
+            }
         }
 
         None
