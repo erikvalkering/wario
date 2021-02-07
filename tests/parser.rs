@@ -49,15 +49,15 @@ fn parse_section(file: &mut File) -> Result {
     Ok(())
 }
 
-fn parse_sections(mut file: &mut File) -> Result {
-    parse_section(&mut file)?;
+fn parse_sections(file: &mut File) -> Result {
+    parse_section(file)?;
 
     Ok(())
 }
 
-fn parse_module(mut file: &mut File) -> Result {
-    parse_preamble(&mut file)?;
-    parse_sections(&mut file)?;
+fn parse_module(file: &mut File) -> Result {
+    parse_preamble(file)?;
+    parse_sections(file)?;
 
     Ok(())
 }
