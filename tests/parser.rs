@@ -23,6 +23,7 @@ fn parse_u32(file: &mut File) -> Result<u32> {
     Ok(result)
 }
 
+#[derive(Debug)]
 struct Preamble {
     magic: [u8; 4],
     version: [u8; 4],
@@ -55,6 +56,7 @@ fn parse_preamble(file: &mut File) -> Result<Preamble> {
     })
 }
 
+#[derive(Debug)]
 enum SectionID {
     Custom,
     Type,
@@ -70,6 +72,7 @@ enum SectionID {
     Data,
 }
 
+#[derive(Debug)]
 struct Section {
     id: SectionID,
     size: u32,
@@ -99,7 +102,6 @@ fn parse_section(file: &mut File) -> Result<Section> {
     };
 
     let size = parse_u32(file)?;
-    println!("Size: {}", size);
 
     Ok(Section {
         id: id,
@@ -112,8 +114,10 @@ fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
     Ok(vec![parse_section(file)?])
 }
 
+#[derive(Debug)]
 struct FuncType;
 
+#[derive(Debug)]
 struct Module {
     preamble: Preamble,
     types: Option<Vec<FuncType>>,
@@ -127,6 +131,7 @@ fn parse_module(file: &mut File) -> Result<Module> {
     };
 
     for section in parse_sections(file)? {
+        println!("{:?}", section);
     }
 
     Ok(module)
@@ -146,6 +151,7 @@ fn parse_wasm() -> Result<()> {
     };
 
     let module = parse_module(&mut file)?;
+    println!("{:?}", module);
 
     Ok(())
 }
