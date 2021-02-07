@@ -16,6 +16,27 @@ fn parse_preamble(file: &mut File) -> Result {
 }
 
 fn parse_sections(file: &mut File) -> Result {
+    let mut id = [0; 1];
+    if let Err(err) = file.read(&mut id) {
+        return Err(format!("Unable to read section id: {}", err));
+    }
+
+    match id[0] {
+        0 => println!("Custom section"),
+        1 => println!("Type section"),
+        2 => println!("Import section"),
+        3 => println!("Function section"),
+        4 => println!("Table section"),
+        5 => println!("Memory section"),
+        6 => println!("Global section"),
+        7 => println!("Export section"),
+        8 => println!("Start section"),
+        9 => println!("Element section"),
+        10 => println!("Code section"),
+        11 => println!("Data section"),
+        _ => return Err(format!("Found unknown section id: {}", id[0])),
+    }
+
     Ok(())
 }
 
