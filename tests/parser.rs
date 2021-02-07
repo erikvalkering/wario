@@ -15,8 +15,13 @@ fn parse_preamble(file: &mut File) -> Result {
     }
 }
 
+fn parse_sections(file: &mut File) -> Result {
+    Ok(())
+}
+
 fn parse_module(mut file: &mut File) -> Result {
     parse_preamble(&mut file)?;
+    parse_sections(&mut file)?;
 
     Ok(())
 }
