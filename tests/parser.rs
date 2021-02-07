@@ -16,7 +16,7 @@ fn parse_preamble(file: &mut File) -> Result {
     }
 }
 
-fn parse_sections(file: &mut File) -> Result {
+fn parse_section(file: &mut File) -> Result {
     let mut id = [0; 1];
     if let Err(err) = file.read(&mut id) {
         return Err(format!("Unable to read section id: {}", err));
@@ -45,6 +45,12 @@ fn parse_sections(file: &mut File) -> Result {
 
     let size = LittleEndian::read_u32(&buf);
     println!("Size: {}", size);
+
+    Ok(())
+}
+
+fn parse_sections(mut file: &mut File) -> Result {
+    parse_section(&mut file)?;
 
     Ok(())
 }
