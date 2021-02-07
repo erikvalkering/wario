@@ -12,7 +12,17 @@ fn parse_preamble(file: &mut File) -> Result {
 
     match &magic {
         b"\0asm" => Ok(()),
-        _ => Err("Invalid preamble".to_owned()),
+        _ => Err("Invalid magic value".to_owned()),
+    }?;
+
+    let mut version = [0; 4];
+    if let Err(err) = file.read(&mut version) {
+        return Err(format!("Unable to read preamble: {}", err));
+    }
+
+    match &version {
+        [1, 0, 0, 0] => Ok(()),
+        _ => Err("Invalid version".to_owned()),
     }
 }
 
