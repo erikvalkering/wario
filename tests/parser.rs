@@ -1,3 +1,4 @@
+use byteorder::{ByteOrder, LittleEndian};
 use std::fs::File;
 use std::io::Read;
 
@@ -36,6 +37,14 @@ fn parse_sections(file: &mut File) -> Result {
         11 => println!("Data section"),
         _ => return Err(format!("Found unknown section id: {}", id[0])),
     }
+
+    let mut buf = [0; 4];
+    if let Err(err) = file.read(&mut buf) {
+        return Err(format!("Unable to read section id: {}", err));
+    }
+
+    let size = LittleEndian::read_u32(&buf);
+    println!("Size: {}", size);
 
     Ok(())
 }
