@@ -5,12 +5,12 @@ use std::io::Read;
 type Result = std::result::Result<(), String>;
 
 fn parse_preamble(file: &mut File) -> Result {
-    let mut data: [u8; 4] = [0; 4];
-    if let Err(err) = file.read(&mut data) {
+    let mut magic: [u8; 4] = [0; 4];
+    if let Err(err) = file.read(&mut magic) {
         return Err(format!("Unable to read preamble: {}", err));
     }
 
-    match &data {
+    match &magic {
         b"\0asm" => Ok(()),
         _ => Err("Invalid preamble".to_owned()),
     }
