@@ -110,8 +110,8 @@ impl Section {
     fn parse(file: &mut File) -> Result<Section> {
         let id = SectionID::parse(file)?;
         let size = parse_u32(file)?;
-        let mut contents = Vec::with_capacity(size as usize);
-        file.read_to_end(&mut contents)
+        let mut contents = vec![0; size as usize];
+        file.read(contents.as_mut_slice())
             .or_else(|err| Err(format!("Unable to read section contents: {}", err)))?;
 
         if contents.len() != size as usize {
