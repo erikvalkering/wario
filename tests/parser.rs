@@ -131,7 +131,21 @@ impl Section {
 }
 
 fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
-    Ok(vec![Section::parse(file)?])
+    let mut sections = Vec::new();
+
+    loop {
+        match Section::parse(file) {
+            Ok(section) => {
+                sections.push(section);
+            }
+            Err(err) => {
+                println!("Stopping processing section: {}", err);
+                break;
+            }
+        }
+    }
+
+    Ok(sections)
 }
 
 #[derive(Debug)]
