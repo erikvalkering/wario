@@ -72,15 +72,8 @@ enum SectionID {
     Data,
 }
 
-#[derive(Debug)]
-struct Section {
-    id: SectionID,
-    size: u32,
-    contents: Vec<u8>,
-}
-
-impl Section {
-    fn parse(file: &mut File) -> Result<Section> {
+impl SectionID {
+    fn parse(file: &mut File) -> Result<SectionID> {
         let mut id = [0; 1];
         if let Err(err) = file.read(&mut id) {
             return Err(format!("Unable to read section id: {}", err));
@@ -102,6 +95,20 @@ impl Section {
             _ => return Err(format!("Found unknown section id: {}", id[0])),
         };
 
+        Ok(id)
+    }
+}
+
+#[derive(Debug)]
+struct Section {
+    id: SectionID,
+    size: u32,
+    contents: Vec<u8>,
+}
+
+impl Section {
+    fn parse(file: &mut File) -> Result<Section> {
+        let id = SectionID::parse(file)?;
         let size = parse_u32(file)?;
 
         Ok(Section {
