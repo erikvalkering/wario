@@ -1,8 +1,27 @@
-use byteorder::{ByteOrder, LittleEndian};
 use std::fs::File;
 use std::io::Read;
 
 type Result = std::result::Result<(), String>;
+
+fn parse_u32(file: &mut File) -> std::result::Result<u32, String> {
+    let mut result = 0u32;
+
+    loop {
+        let mut buf = [0; 1];
+        if let Err(err) = file.read(&mut buf) {
+            return Err(format!("Unable to read u32: {}", err));
+        }
+
+        result <<= 7;
+        result |= buf[0] as u32 & 0x7f;
+
+        if buf[0] & 0x80 == 0 {
+            break;
+        }
+    }
+
+    Ok(result)
+}
 
 fn parse_preamble(file: &mut File) -> Result {
     let mut magic = [0; 4];
@@ -48,12 +67,7 @@ fn parse_section(file: &mut File) -> Result {
         _ => return Err(format!("Found unknown section id: {}", id[0])),
     }
 
-    let mut buf = [0; 4];
-    if let Err(err) = file.read(&mut buf) {
-        return Err(format!("Unable to read section id: {}", err));
-    }
-
-    let size = LittleEndian::read_u32(&buf);
+    let size = parse_u32(file)?;
     println!("Size: {}", size);
 
     Ok(())
