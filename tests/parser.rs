@@ -5,7 +5,7 @@ use std::io::Read;
 type Result = std::result::Result<(), String>;
 
 fn parse_preamble(file: &mut File) -> Result {
-    let mut magic: [u8; 4] = [0; 4];
+    let mut magic = [0; 4];
     if let Err(err) = file.read(&mut magic) {
         return Err(format!("Unable to read preamble: {}", err));
     }
