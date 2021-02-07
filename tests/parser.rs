@@ -1,9 +1,9 @@
 use std::fs::File;
 use std::io::Read;
 
-type Result = std::result::Result<(), String>;
+type Result<T> = std::result::Result<T, String>;
 
-fn parse_u32(file: &mut File) -> std::result::Result<u32, String> {
+fn parse_u32(file: &mut File) -> Result<u32> {
     let mut result = 0u32;
 
     loop {
@@ -23,7 +23,12 @@ fn parse_u32(file: &mut File) -> std::result::Result<u32, String> {
     Ok(result)
 }
 
-fn parse_preamble(file: &mut File) -> Result {
+struct Preamble {
+    magic: [u8; 4],
+    version: [u8; 4],
+}
+
+fn parse_preamble(file: &mut File) -> Result<Preamble> {
     let mut magic = [0; 4];
     if let Err(err) = file.read(&mut magic) {
         return Err(format!("Unable to read preamble: {}", err));
@@ -42,52 +47,93 @@ fn parse_preamble(file: &mut File) -> Result {
     match &version {
         [1, 0, 0, 0] => Ok(()),
         _ => Err("Invalid version".to_owned()),
-    }
+    };
+
+    Ok(Preamble {
+        magic: magic,
+        version: version,
+    })
 }
 
-fn parse_section(file: &mut File) -> Result {
+enum SectionID {
+    Custom,
+    Type,
+    Import,
+    Function,
+    Table,
+    Memory,
+    Global,
+    Export,
+    Start,
+    Element,
+    Code,
+    Data,
+}
+
+struct Section {
+    id: SectionID,
+    size: u32,
+    contents: Vec<u8>,
+}
+
+fn parse_section(file: &mut File) -> Result<Section> {
     let mut id = [0; 1];
     if let Err(err) = file.read(&mut id) {
         return Err(format!("Unable to read section id: {}", err));
     }
 
-    match id[0] {
-        0 => println!("Custom section"),
-        1 => println!("Type section"),
-        2 => println!("Import section"),
-        3 => println!("Function section"),
-        4 => println!("Table section"),
-        5 => println!("Memory section"),
-        6 => println!("Global section"),
-        7 => println!("Export section"),
-        8 => println!("Start section"),
-        9 => println!("Element section"),
-        10 => println!("Code section"),
-        11 => println!("Data section"),
+    let id = match id[0] {
+        0 => SectionID::Custom,
+        1 => SectionID::Type,
+        2 => SectionID::Import,
+        3 => SectionID::Function,
+        4 => SectionID::Table,
+        5 => SectionID::Memory,
+        6 => SectionID::Global,
+        7 => SectionID::Export,
+        8 => SectionID::Start,
+        9 => SectionID::Element,
+        10 => SectionID::Code,
+        11 => SectionID::Data,
         _ => return Err(format!("Found unknown section id: {}", id[0])),
-    }
+    };
 
     let size = parse_u32(file)?;
     println!("Size: {}", size);
 
-    Ok(())
+    Ok(Section {
+        id: id,
+        size: size,
+        contents: vec![],
+    })
 }
 
-fn parse_sections(file: &mut File) -> Result {
-    parse_section(file)?;
-
-    Ok(())
+fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
+    Ok(vec![parse_section(file)?])
 }
 
-fn parse_module(file: &mut File) -> Result {
-    parse_preamble(file)?;
-    parse_sections(file)?;
+struct FuncType;
 
-    Ok(())
+struct Module {
+    preamble: Preamble,
+    types: Option<Vec<FuncType>>,
+}
+
+
+fn parse_module(file: &mut File) -> Result<Module> {
+    let mut module = Module {
+        preamble: parse_preamble(file)?,
+        types: None,
+    };
+
+    for section in parse_sections(file)? {
+    }
+
+    Ok(module)
 }
 
 #[test]
-fn parse_wasm() -> Result {
+fn parse_wasm() -> Result<()> {
     use std::path::PathBuf;
     let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "input.wasm"]
         .iter()
@@ -99,7 +145,7 @@ fn parse_wasm() -> Result {
         Err(err) => return Err(format!("Unable to open file: {}", err)),
     };
 
-    parse_module(&mut file)?;
+    let module = parse_module(&mut file)?;
 
     Ok(())
 }
