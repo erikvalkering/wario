@@ -29,29 +29,31 @@ struct Preamble {
     version: [u8; 4],
 }
 
-fn parse_preamble(file: &mut File) -> Result<Preamble> {
-    let mut magic = [0; 4];
-    if let Err(err) = file.read(&mut magic) {
-        return Err(format!("Unable to read preamble: {}", err));
+impl Preamble {
+    fn parse(file: &mut File) -> Result<Preamble> {
+        let mut magic = [0; 4];
+        if let Err(err) = file.read(&mut magic) {
+            return Err(format!("Unable to read preamble: {}", err));
+        }
+
+        if &magic != b"\0asm" {
+            return Err("Invalid magic value".to_owned());
+        }
+
+        let mut version = [0; 4];
+        if let Err(err) = file.read(&mut version) {
+            return Err(format!("Unable to read preamble: {}", err));
+        }
+
+        if version != [1, 0, 0, 0] {
+            return Err("Invalid version".to_owned());
+        };
+
+        Ok(Preamble {
+            magic: magic,
+            version: version,
+        })
     }
-
-    if &magic != b"\0asm" {
-        return Err("Invalid magic value".to_owned());
-    }
-
-    let mut version = [0; 4];
-    if let Err(err) = file.read(&mut version) {
-        return Err(format!("Unable to read preamble: {}", err));
-    }
-
-    if version != [1, 0, 0, 0] {
-        return Err("Invalid version".to_owned());
-    };
-
-    Ok(Preamble {
-        magic: magic,
-        version: version,
-    })
 }
 
 #[derive(Debug)]
@@ -77,39 +79,41 @@ struct Section {
     contents: Vec<u8>,
 }
 
-fn parse_section(file: &mut File) -> Result<Section> {
-    let mut id = [0; 1];
-    if let Err(err) = file.read(&mut id) {
-        return Err(format!("Unable to read section id: {}", err));
+impl Section {
+    fn parse(file: &mut File) -> Result<Section> {
+        let mut id = [0; 1];
+        if let Err(err) = file.read(&mut id) {
+            return Err(format!("Unable to read section id: {}", err));
+        }
+
+        let id = match id[0] {
+            0 => SectionID::Custom,
+            1 => SectionID::Type,
+            2 => SectionID::Import,
+            3 => SectionID::Function,
+            4 => SectionID::Table,
+            5 => SectionID::Memory,
+            6 => SectionID::Global,
+            7 => SectionID::Export,
+            8 => SectionID::Start,
+            9 => SectionID::Element,
+            10 => SectionID::Code,
+            11 => SectionID::Data,
+            _ => return Err(format!("Found unknown section id: {}", id[0])),
+        };
+
+        let size = parse_u32(file)?;
+
+        Ok(Section {
+            id: id,
+            size: size,
+            contents: vec![],
+        })
     }
-
-    let id = match id[0] {
-        0 => SectionID::Custom,
-        1 => SectionID::Type,
-        2 => SectionID::Import,
-        3 => SectionID::Function,
-        4 => SectionID::Table,
-        5 => SectionID::Memory,
-        6 => SectionID::Global,
-        7 => SectionID::Export,
-        8 => SectionID::Start,
-        9 => SectionID::Element,
-        10 => SectionID::Code,
-        11 => SectionID::Data,
-        _ => return Err(format!("Found unknown section id: {}", id[0])),
-    };
-
-    let size = parse_u32(file)?;
-
-    Ok(Section {
-        id: id,
-        size: size,
-        contents: vec![],
-    })
 }
 
 fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
-    Ok(vec![parse_section(file)?])
+    Ok(vec![Section::parse(file)?])
 }
 
 #[derive(Debug)]
@@ -122,17 +126,19 @@ struct Module {
 }
 
 
-fn parse_module(file: &mut File) -> Result<Module> {
-    let mut module = Module {
-        preamble: parse_preamble(file)?,
-        types: None,
-    };
+impl Module {
+    fn parse(file: &mut File) -> Result<Module> {
+        let mut module = Module {
+            preamble: Preamble::parse(file)?,
+            types: None,
+        };
 
-    for section in parse_sections(file)? {
-        println!("{:?}", section);
+        for section in parse_sections(file)? {
+            println!("{:?}", section);
+        }
+
+        Ok(module)
     }
-
-    Ok(module)
 }
 
 #[test]
@@ -148,7 +154,7 @@ fn parse_wasm() -> Result<()> {
         Err(err) => return Err(format!("Unable to open file: {}", err)),
     };
 
-    let module = parse_module(&mut file)?;
+    let module = Module::parse(&mut file)?;
     println!("{:?}", module);
 
     Ok(())
