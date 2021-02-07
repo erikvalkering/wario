@@ -132,7 +132,6 @@ struct Module {
     types: Option<Vec<FuncType>>,
 }
 
-
 impl Module {
     fn parse(file: &mut File) -> Result<Module> {
         let mut module = Module {
