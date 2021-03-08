@@ -1,21 +1,36 @@
+use std::convert::TryInto;
 use std::fs::File;
 use std::io::Read;
 
 type Result<T> = std::result::Result<T, String>;
 
+fn parse_u8_array(file: &mut File, size: usize) -> Result<Vec<u8>> {
+    let mut buf = vec![0; size];
+
+    match file.read(&mut buf) {
+        Err(err) => Err(format!("Unable to read data: {}", err)),
+        Ok(s) if s == size => Ok(buf),
+        Ok(s) => Err(format!(
+            "Unable to read data: expected size to be read: {} actual size read: {}",
+            size, s
+        )),
+    }
+}
+
+fn parse_u8(file: &mut File) -> Result<u8> {
+    Ok(parse_u8_array(file, 1)?[0])
+}
+
 fn parse_u32(file: &mut File) -> Result<u32> {
     let mut result = 0u32;
 
     loop {
-        let mut buf = [0; 1];
-        if let Err(err) = file.read(&mut buf) {
-            return Err(format!("Unable to read u32: {}", err));
-        }
+        let value = parse_u8(file)?;
 
         result <<= 7;
-        result |= buf[0] as u32 & 0x7f;
+        result |= value as u32 & 0x7f;
 
-        if buf[0] & 0x80 == 0 {
+        if value & 0x80 == 0 {
             break;
         }
     }
@@ -31,27 +46,19 @@ struct Preamble {
 
 impl Preamble {
     fn parse(file: &mut File) -> Result<Preamble> {
-        let mut magic = [0; 4];
-        if let Err(err) = file.read(&mut magic) {
-            return Err(format!("Unable to read preamble: {}", err));
-        }
-
+        let magic = parse_u8_array(file, 4)?;
         if &magic != b"\0asm" {
             return Err("Invalid magic value".to_owned());
         }
 
-        let mut version = [0; 4];
-        if let Err(err) = file.read(&mut version) {
-            return Err(format!("Unable to read preamble: {}", err));
-        }
-
+        let version = parse_u8_array(file, 4)?;
         if version != [1, 0, 0, 0] {
             return Err("Invalid version".to_owned());
         };
 
         Ok(Preamble {
-            magic: magic,
-            version: version,
+            magic: magic.try_into().unwrap(),
+            version: version.try_into().unwrap(),
         })
     }
 }
@@ -74,12 +81,9 @@ enum SectionID {
 
 impl SectionID {
     fn parse(file: &mut File) -> Result<SectionID> {
-        let mut id = [0; 1];
-        if let Err(err) = file.read(&mut id) {
-            return Err(format!("Unable to read section id: {}", err));
-        }
+        let id = parse_u8(file)?;
 
-        let id = match id[0] {
+        let id = match id {
             0 => SectionID::Custom,
             1 => SectionID::Type,
             2 => SectionID::Import,
@@ -92,7 +96,7 @@ impl SectionID {
             9 => SectionID::Element,
             10 => SectionID::Code,
             11 => SectionID::Data,
-            _ => return Err(format!("Found unknown section id: {}", id[0])),
+            _ => return Err(format!("Found unknown section id: {}", id)),
         };
 
         Ok(id)
@@ -110,23 +114,10 @@ impl Section {
     fn parse(file: &mut File) -> Result<Section> {
         let id = SectionID::parse(file)?;
         let size = parse_u32(file)?;
-        let mut contents = vec![0; size as usize];
-        file.read(contents.as_mut_slice())
-            .or_else(|err| Err(format!("Unable to read section contents: {}", err)))?;
 
-        if contents.len() != size as usize {
-            return Err(format!(
-                "Invalid size for section: expected: {} actual: {}",
-                size,
-                contents.len(),
-            ));
-        }
+        let contents = parse_u8_array(file, size as usize).unwrap();
 
-        Ok(Section {
-            id: id,
-            size: size,
-            contents: contents,
-        })
+        Ok(Section { id, size, contents })
     }
 }
 
