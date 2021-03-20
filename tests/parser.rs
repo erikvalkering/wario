@@ -2,26 +2,34 @@ use std::convert::TryInto;
 use std::fs::File;
 use std::io::Read;
 
+#[derive(Debug)]
+enum ParseErr {
+    Err(String),
+    Eof,
+}
+
+type ParseResult<T> = std::result::Result<T, ParseErr>;
 type Result<T> = std::result::Result<T, String>;
 
-fn parse_u8_array(file: &mut File, size: usize) -> Result<Vec<u8>> {
+fn parse_u8_array(file: &mut File, size: usize) -> ParseResult<Vec<u8>> {
     let mut buf = vec![0; size];
 
     match file.read(&mut buf) {
-        Err(err) => Err(format!("Unable to read data: {}", err)),
+        Err(err) => Err(ParseErr::Err(format!("Unable to read data: {}", err))),
         Ok(s) if s == size => Ok(buf),
-        Ok(s) => Err(format!(
+        Ok(0) => Err(ParseErr::Eof),
+        Ok(s) => Err(ParseErr::Err(format!(
             "Unable to read data: expected size to be read: {} actual size read: {}",
             size, s
-        )),
+        ))),
     }
 }
 
-fn parse_u8(file: &mut File) -> Result<u8> {
+fn parse_u8(file: &mut File) -> ParseResult<u8> {
     Ok(parse_u8_array(file, 1)?[0])
 }
 
-fn parse_leb128(file: &mut File) -> Result<u32> {
+fn parse_leb128(file: &mut File) -> ParseResult<u32> {
     let mut result = 0u32;
 
     let mut shift = 0;
@@ -40,8 +48,8 @@ fn parse_leb128(file: &mut File) -> Result<u32> {
     Ok(result)
 }
 
-fn parse_u32(file: &mut File) -> Result<u32> {
-	parse_leb128(file)
+fn parse_u32(file: &mut File) -> ParseResult<u32> {
+    parse_leb128(file)
 }
 
 #[derive(Debug)]
@@ -51,15 +59,15 @@ struct Preamble {
 }
 
 impl Preamble {
-    fn parse(file: &mut File) -> Result<Preamble> {
+    fn parse(file: &mut File) -> ParseResult<Preamble> {
         let magic = parse_u8_array(file, 4)?;
         if &magic != b"\0asm" {
-            return Err("Invalid magic value".to_owned());
+            return Err(ParseErr::Err("Invalid magic value".to_owned()));
         }
 
         let version = parse_u8_array(file, 4)?;
         if version != [1, 0, 0, 0] {
-            return Err("Invalid version".to_owned());
+            return Err(ParseErr::Err("Invalid version".to_owned()));
         };
 
         Ok(Preamble {
@@ -86,7 +94,7 @@ enum SectionID {
 }
 
 impl SectionID {
-    fn parse(file: &mut File) -> Result<SectionID> {
+    fn parse(file: &mut File) -> ParseResult<SectionID> {
         let id = parse_u8(file)?;
 
         let id = match id {
@@ -102,7 +110,7 @@ impl SectionID {
             9 => SectionID::Element,
             10 => SectionID::Code,
             11 => SectionID::Data,
-            _ => return Err(format!("Found unknown section id: {}", id)),
+            _ => return Err(ParseErr::Err(format!("Found unknown section id: {}", id))),
         };
 
         Ok(id)
@@ -117,7 +125,7 @@ struct Section {
 }
 
 impl Section {
-    fn parse(file: &mut File) -> Result<Section> {
+    fn parse(file: &mut File) -> ParseResult<Section> {
         let id = SectionID::parse(file)?;
         let size = parse_u32(file)?;
 
@@ -132,13 +140,9 @@ fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
 
     loop {
         match Section::parse(file) {
-            Ok(section) => {
-                sections.push(section);
-            }
-            Err(err) => {
-                println!("Stopping processing section: {}", err);
-                break;
-            }
+            Ok(section) => sections.push(section),
+            Err(ParseErr::Eof) => break,
+            Err(ParseErr::Err(err)) => return Err(err),
         }
     }
 
@@ -156,8 +160,14 @@ struct Module {
 
 impl Module {
     fn parse(file: &mut File) -> Result<Module> {
-        let mut module = Module {
-            preamble: Preamble::parse(file)?,
+        let preamble = match Preamble::parse(file) {
+            Ok(x) => x,
+            Err(ParseErr::Err(err)) => return Err(err),
+            Err(ParseErr::Eof) => return Err("Unexpected end of file detected".to_owned()),
+        };
+
+        let module = Module {
+            preamble,
             types: None,
         };
 
