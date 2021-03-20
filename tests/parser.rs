@@ -78,9 +78,67 @@ impl Preamble {
 }
 
 #[derive(Debug)]
+enum ValueType {
+    I32,
+    I64,
+    F32,
+    F64,
+}
+
+impl ValueType {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        let value_type = parse_u8(file)?;
+
+        match value_type {
+            0x7f => Ok(ValueType::I32),
+            0x7e => Ok(ValueType::I64),
+            0x7d => Ok(ValueType::F32),
+            0x7c => Ok(ValueType::F64),
+            _ => Err(ParseErr::Err(format!(
+                "Invalid value type encountered: {}",
+                value_type
+            ))),
+        }
+    }
+}
+
+fn parse_result_type(file: &mut File) -> ParseResult<Vec<ValueType>> {
+    let n = parse_u32(file)?;
+
+    let mut result_type = vec![];
+    for _ in 0..n {
+        result_type.push(ValueType::parse(file)?);
+    }
+
+    Ok(result_type)
+}
+
+#[derive(Debug)]
+struct FuncType {
+    parameter_types: Vec<ValueType>,
+    result_types: Vec<ValueType>,
+}
+
+impl FuncType {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        let marker = parse_u8(file)?;
+        if marker != 0x60 {
+            return Err(ParseErr::Err(format!(
+                "Invalid marker found for FuncType: {}",
+                marker
+            )));
+        }
+
+        Ok(FuncType {
+            parameter_types: parse_result_type(file)?,
+            result_types: parse_result_type(file)?,
+        })
+    }
+}
+#[derive(Debug)]
 enum Section {
     Custom,
-    Type,
+    Type(Vec<FuncType>),
     Import,
     Function,
     Table,
@@ -93,6 +151,17 @@ enum Section {
     Data,
 }
 
+fn parse_types(file: &mut File) -> ParseResult<Vec<FuncType>> {
+    let n = parse_u32(file)?;
+
+    let mut func_types = vec![];
+    for _ in 0..n {
+        func_types.push(FuncType::parse(file)?);
+    }
+
+    Ok(func_types)
+}
+
 impl Section {
     fn parse(file: &mut File) -> ParseResult<Section> {
         let id = parse_u8(file)?;
@@ -100,7 +169,7 @@ impl Section {
 
         let section = match id {
             00 => Section::Custom,
-            01 => Section::Type,
+            01 => Section::Type(parse_types(file)?),
             02 => Section::Import,
             03 => Section::Function,
             04 => Section::Table,
@@ -114,7 +183,12 @@ impl Section {
             _ => return Err(ParseErr::Err(format!("Found unknown section id: {}", id))),
         };
 
-        let _contents = parse_u8_array(file, size as usize).unwrap();
+        match section {
+            Section::Type(_) => {}
+            _ => {
+                let _contents = parse_u8_array(file, size as usize).unwrap();
+            }
+        }
 
         Ok(section)
     }
@@ -135,12 +209,9 @@ fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
 }
 
 #[derive(Debug)]
-struct FuncType;
-
-#[derive(Debug)]
 struct Module {
     preamble: Preamble,
-    types: Option<Vec<FuncType>>,
+    types: Vec<FuncType>,
 }
 
 impl Module {
@@ -151,13 +222,18 @@ impl Module {
             Err(ParseErr::Eof) => return Err("Unexpected end of file detected".to_owned()),
         };
 
-        let module = Module {
+        let mut module = Module {
             preamble,
-            types: None,
+            types: vec![],
         };
 
         for section in parse_sections(file)? {
             println!("{:?}", section);
+
+            match section {
+                Section::Type(types) => module.types = types,
+                _ => {}
+            }
         }
 
         Ok(module)
