@@ -78,7 +78,7 @@ impl Preamble {
 }
 
 #[derive(Debug)]
-enum SectionID {
+enum Section {
     Custom,
     Type,
     Import,
@@ -93,45 +93,30 @@ enum SectionID {
     Data,
 }
 
-impl SectionID {
-    fn parse(file: &mut File) -> ParseResult<SectionID> {
+impl Section {
+    fn parse(file: &mut File) -> ParseResult<Section> {
         let id = parse_u8(file)?;
+        let size = parse_u32(file)?;
 
-        let id = match id {
-            0 => SectionID::Custom,
-            1 => SectionID::Type,
-            2 => SectionID::Import,
-            3 => SectionID::Function,
-            4 => SectionID::Table,
-            5 => SectionID::Memory,
-            6 => SectionID::Global,
-            7 => SectionID::Export,
-            8 => SectionID::Start,
-            9 => SectionID::Element,
-            10 => SectionID::Code,
-            11 => SectionID::Data,
+        let section = match id {
+            00 => Section::Custom,
+            01 => Section::Type,
+            02 => Section::Import,
+            03 => Section::Function,
+            04 => Section::Table,
+            05 => Section::Memory,
+            06 => Section::Global,
+            07 => Section::Export,
+            08 => Section::Start,
+            09 => Section::Element,
+            10 => Section::Code,
+            11 => Section::Data,
             _ => return Err(ParseErr::Err(format!("Found unknown section id: {}", id))),
         };
 
-        Ok(id)
-    }
-}
+        let _contents = parse_u8_array(file, size as usize).unwrap();
 
-#[derive(Debug)]
-struct Section {
-    id: SectionID,
-    size: u32,
-    contents: Vec<u8>,
-}
-
-impl Section {
-    fn parse(file: &mut File) -> ParseResult<Section> {
-        let id = SectionID::parse(file)?;
-        let size = parse_u32(file)?;
-
-        let contents = parse_u8_array(file, size as usize).unwrap();
-
-        Ok(Section { id, size, contents })
+        Ok(section)
     }
 }
 
