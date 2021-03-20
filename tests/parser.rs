@@ -21,7 +21,7 @@ fn parse_u8(file: &mut File) -> Result<u8> {
     Ok(parse_u8_array(file, 1)?[0])
 }
 
-fn parse_u32(file: &mut File) -> Result<u32> {
+fn parse_leb128(file: &mut File) -> Result<u32> {
     let mut result = 0u32;
 
     let mut shift = 0;
@@ -38,6 +38,10 @@ fn parse_u32(file: &mut File) -> Result<u32> {
     }
 
     Ok(result)
+}
+
+fn parse_u32(file: &mut File) -> Result<u32> {
+	parse_leb128(file)
 }
 
 #[derive(Debug)]
