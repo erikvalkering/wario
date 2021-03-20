@@ -24,15 +24,17 @@ fn parse_u8(file: &mut File) -> Result<u8> {
 fn parse_u32(file: &mut File) -> Result<u32> {
     let mut result = 0u32;
 
+    let mut shift = 0;
     loop {
         let value = parse_u8(file)?;
 
-        result <<= 7;
-        result |= value as u32 & 0x7f;
+        result |= (value as u32 & 0x7f) << shift;
 
         if value & 0x80 == 0 {
             break;
         }
+
+        shift += 7;
     }
 
     Ok(result)
