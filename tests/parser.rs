@@ -254,7 +254,7 @@ fn parse_wasm() -> Result<()> {
     };
 
     let module = Module::parse(&mut file)?;
-    println!("{:?}", module);
+    println!("{:#?}", module);
 
     Ok(())
 }
