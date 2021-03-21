@@ -135,6 +135,18 @@ impl FuncType {
         })
     }
 }
+
+fn parse_types(file: &mut File) -> ParseResult<Vec<FuncType>> {
+    let n = parse_u32(file)?;
+
+    let mut func_types = vec![];
+    for _ in 0..n {
+        func_types.push(FuncType::parse(file)?);
+    }
+
+    Ok(func_types)
+}
+
 #[derive(Debug)]
 enum Section {
     Custom,
@@ -149,17 +161,6 @@ enum Section {
     Element,
     Code,
     Data,
-}
-
-fn parse_types(file: &mut File) -> ParseResult<Vec<FuncType>> {
-    let n = parse_u32(file)?;
-
-    let mut func_types = vec![];
-    for _ in 0..n {
-        func_types.push(FuncType::parse(file)?);
-    }
-
-    Ok(func_types)
 }
 
 impl Section {
