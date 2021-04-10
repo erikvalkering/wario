@@ -281,8 +281,13 @@ impl ImportDescriptor {
     }
 }
 
-#[derive(Debug)]
 struct Name(String);
+
+impl fmt::Debug for Name {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl Name {
     fn parse(file: &mut File) -> ParseResult<Self> {
@@ -302,11 +307,20 @@ impl Name {
     }
 }
 
-#[derive(Debug)]
 struct Import {
     module: Name,
     name: Name,
     descriptor: ImportDescriptor,
+}
+
+impl fmt::Debug for Import {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{:?}.{:?}: {:?}",
+            self.module, self.name, self.descriptor
+        )
+    }
 }
 
 impl Import {
