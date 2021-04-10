@@ -165,7 +165,7 @@ impl ElemType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let result = match parse_u8(file)? {
             0x70 => Self::FuncRef,
-            elemType => return Err(ParseErr::Err(format!("Invalid ElemType: {}", elemType))),
+            elem_type => return Err(ParseErr::Err(format!("Invalid ElemType: {}", elem_type))),
         };
 
         Ok(result)
@@ -197,14 +197,14 @@ impl Limits {
 
 #[derive(Debug)]
 struct TableType {
-    elementType: ElemType,
+    elem_type: ElemType,
     limits: Limits,
 }
 
 impl TableType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let result = Self {
-            elementType: ElemType::parse(file)?,
+            elem_type: ElemType::parse(file)?,
             limits: Limits::parse(file)?,
         };
 
@@ -243,14 +243,14 @@ impl Mutability {
 
 #[derive(Debug)]
 struct GlobalType {
-    valueType: ValueType,
+    value_type: ValueType,
     mutability: Mutability,
 }
 
 impl GlobalType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self {
-            valueType: ValueType::parse(file)?,
+            value_type: ValueType::parse(file)?,
             mutability: Mutability::parse(file)?,
         })
     }
