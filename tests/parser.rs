@@ -415,12 +415,10 @@ impl Module {
         };
 
         for section in parse_sections(file)? {
-            println!("{:?}", section);
-
             match section {
                 Section::Type(types) => module.types = types,
                 Section::Import(imports) => module.imports = imports,
-                _ => {}
+                section => println!("Section {:?} not implemented yet, skipping", section),
             }
         }
 
