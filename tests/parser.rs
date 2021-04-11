@@ -58,7 +58,7 @@ struct Preamble {
 }
 
 impl fmt::Debug for Preamble {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use std::str;
         f.debug_struct("Preamble")
             .field("magic", &str::from_utf8(&self.magic).unwrap())
@@ -293,7 +293,7 @@ impl ImportDescriptor {
 struct Name(String);
 
 impl fmt::Debug for Name {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
@@ -323,7 +323,7 @@ struct Import {
 }
 
 impl fmt::Debug for Import {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "{:?}.{:?}: {:?}",
