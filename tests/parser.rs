@@ -16,6 +16,17 @@ trait Parse: Sized {
     fn parse(file: &mut File) -> ParseResult<Self>;
 }
 
+fn parse_vec<T: Parse>(file: &mut File) -> ParseResult<Vec<T>> {
+    let n = u32::parse(file)?;
+
+    let mut result_type = vec![];
+    for _ in 0..n {
+        result_type.push(T::parse(file)?);
+    }
+
+    Ok(result_type)
+}
+
 fn parse_u8_array(file: &mut File, size: usize) -> ParseResult<Vec<u8>> {
     let mut buf = vec![0; size];
 
@@ -116,17 +127,6 @@ impl Parse for ValueType {
             ))),
         }
     }
-}
-
-fn parse_vec<T: Parse>(file: &mut File) -> ParseResult<Vec<T>> {
-    let n = parse_u32(file)?;
-
-    let mut result_type = vec![];
-    for _ in 0..n {
-        result_type.push(T::parse(file)?);
-    }
-
-    Ok(result_type)
 }
 
 struct FuncType {
