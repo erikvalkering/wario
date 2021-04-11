@@ -52,10 +52,19 @@ fn parse_u32(file: &mut File) -> ParseResult<u32> {
     parse_leb128(file)
 }
 
-#[derive(Debug)]
 struct Preamble {
     magic: [u8; 4],
     version: [u8; 4],
+}
+
+impl fmt::Debug for Preamble {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use std::str;
+        f.debug_struct("Preamble")
+            .field("magic", &str::from_utf8(&self.magic).unwrap())
+            .field("version", &format!("{:?}", self.version))
+            .finish()
+    }
 }
 
 impl Preamble {
