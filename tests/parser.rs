@@ -353,7 +353,7 @@ enum Section {
     Custom,
     Type(Vec<FuncType>),
     Import(Vec<Import>),
-    Function,
+    Function(Vec<TypeIdx>),
     Table,
     Memory,
     Global,
@@ -373,7 +373,7 @@ impl Section {
             00 => Section::Custom,
             01 => Section::Type(Parse::parse(file)?),
             02 => Section::Import(Parse::parse(file)?),
-            03 => Section::Function,
+            03 => Section::Function(Parse::parse(file)?),
             04 => Section::Table,
             05 => Section::Memory,
             06 => Section::Global,
@@ -388,6 +388,7 @@ impl Section {
         match section {
             Section::Type(_) => {}
             Section::Import(_) => {}
+            Section::Function(_) => {}
             _ => {
                 file.seek(SeekFrom::Current(size as i64)).unwrap();
             }
@@ -416,6 +417,7 @@ struct Module {
     preamble: Preamble,
     types: Vec<FuncType>,
     imports: Vec<Import>,
+    funcs: Vec<TypeIdx>,
 }
 
 impl Module {
@@ -430,12 +432,14 @@ impl Module {
             preamble,
             types: vec![],
             imports: vec![],
+            funcs: vec![],
         };
 
         for section in parse_sections(file)? {
             match section {
                 Section::Type(types) => module.types = types,
                 Section::Import(imports) => module.imports = imports,
+                Section::Function(funcs) => module.funcs = funcs,
                 section => println!("Section {:?} not implemented yet, skipping", section),
             }
         }
