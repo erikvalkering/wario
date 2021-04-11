@@ -27,7 +27,8 @@ fn parse_vec<T: Parse>(file: &mut File) -> ParseResult<Vec<T>> {
     Ok(result_type)
 }
 
-fn parse_u8_array<const SIZE: usize>(file: &mut File) -> ParseResult<[u8; SIZE]> {
+impl<const SIZE: usize> Parse for [u8; SIZE] {
+    fn parse(file: &mut File) -> ParseResult<Self> {
     let mut buf = [0; SIZE];
 
     match file.read(&mut buf) {
@@ -39,11 +40,12 @@ fn parse_u8_array<const SIZE: usize>(file: &mut File) -> ParseResult<[u8; SIZE]>
             SIZE, s
         ))),
     }
+    }
 }
 
 impl Parse for u8 {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        Ok(parse_u8_array::<1>(file)?[0])
+        Ok(<[u8; 1]>::parse(file)?[0])
     }
 }
 
@@ -89,12 +91,12 @@ impl fmt::Debug for Preamble {
 
 impl Preamble {
     fn parse(file: &mut File) -> ParseResult<Preamble> {
-        let magic = parse_u8_array::<4>(file)?;
+        let magic = <[u8; 4]>::parse(file)?;
         if &magic != b"\0asm" {
             return Err(ParseErr::Err("Invalid magic value".to_owned()));
         }
 
-        let version = parse_u8_array::<4>(file)?;
+        let version = <[u8; 4]>::parse(file)?;
         if version != [1, 0, 0, 0] {
             return Err(ParseErr::Err("Invalid version".to_owned()));
         };
