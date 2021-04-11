@@ -66,8 +66,10 @@ fn parse_leb128(file: &mut File) -> ParseResult<u32> {
     Ok(result)
 }
 
-fn parse_u32(file: &mut File) -> ParseResult<u32> {
-    parse_leb128(file)
+impl Parse for u32 {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        parse_leb128(file)
+    }
 }
 
 struct Preamble {
@@ -166,7 +168,7 @@ struct TypeIdx(u32);
 
 impl Parse for TypeIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        Ok(Self(parse_u32(file)?))
+        Ok(Self(u32::parse(file)?))
     }
 }
 
@@ -197,9 +199,9 @@ impl Parse for Limits {
         let has_max = u8::parse(file)? == 1;
 
         let result = Self {
-            min: parse_u32(file)?,
+            min: u32::parse(file)?,
             max: if has_max {
-                Some(parse_u32(file)?)
+                Some(u32::parse(file)?)
             } else {
                 None
             },
@@ -361,7 +363,7 @@ enum Section {
 impl Section {
     fn parse(file: &mut File) -> ParseResult<Section> {
         let id = u8::parse(file)?;
-        let size = parse_u32(file)?;
+        let size = u32::parse(file)?;
 
         let section = match id {
             00 => Section::Custom,
