@@ -16,7 +16,8 @@ trait Parse: Sized {
     fn parse(file: &mut File) -> ParseResult<Self>;
 }
 
-fn parse_vec<T: Parse>(file: &mut File) -> ParseResult<Vec<T>> {
+impl<T: Parse> Parse for Vec<T> {
+    fn parse(file: &mut File) -> ParseResult<Self> {
     let n = u32::parse(file)?;
 
     let mut result_type = vec![];
@@ -25,6 +26,7 @@ fn parse_vec<T: Parse>(file: &mut File) -> ParseResult<Vec<T>> {
     }
 
     Ok(result_type)
+    }
 }
 
 impl<const SIZE: usize> Parse for [u8; SIZE] {
@@ -159,8 +161,8 @@ impl Parse for FuncType {
         }
 
         Ok(FuncType {
-            parameter_types: parse_vec(file)?,
-            result_types: parse_vec(file)?,
+            parameter_types: Parse::parse(file)?,
+            result_types: Parse::parse(file)?,
         })
     }
 }
@@ -309,7 +311,7 @@ impl fmt::Debug for Name {
 
 impl Parse for Name {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        let result = parse_vec(file)?;
+        let result = Parse::parse(file)?;
 
         let result = match String::from_utf8(result) {
             Ok(result) => result,
@@ -369,8 +371,8 @@ impl Section {
 
         let section = match id {
             00 => Section::Custom,
-            01 => Section::Type(parse_vec(file)?),
-            02 => Section::Import(parse_vec(file)?),
+            01 => Section::Type(Parse::parse(file)?),
+            02 => Section::Import(Parse::parse(file)?),
             03 => Section::Function,
             04 => Section::Table,
             05 => Section::Memory,
