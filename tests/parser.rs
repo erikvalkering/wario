@@ -122,10 +122,19 @@ fn parse_result_type(file: &mut File) -> ParseResult<Vec<ValueType>> {
     Ok(result_type)
 }
 
-#[derive(Debug)]
 struct FuncType {
     parameter_types: Vec<ValueType>,
     result_types: Vec<ValueType>,
+}
+
+impl fmt::Debug for FuncType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "FuncType: {:?} -> {:?}",
+            self.parameter_types, self.result_types
+        )
+    }
 }
 
 impl FuncType {
