@@ -12,6 +12,10 @@ enum ParseErr {
 type ParseResult<T> = std::result::Result<T, ParseErr>;
 type Result<T> = std::result::Result<T, String>;
 
+trait Parse: Sized {
+    fn parse(file: &mut File) -> ParseResult<Self>;
+}
+
 fn parse_u8_array(file: &mut File, size: usize) -> ParseResult<Vec<u8>> {
     let mut buf = vec![0; size];
 
@@ -26,8 +30,10 @@ fn parse_u8_array(file: &mut File, size: usize) -> ParseResult<Vec<u8>> {
     }
 }
 
-fn parse_u8(file: &mut File) -> ParseResult<u8> {
-    Ok(parse_u8_array(file, 1)?[0])
+impl Parse for u8 {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(parse_u8_array(file, 1)?[0])
+    }
 }
 
 fn parse_leb128(file: &mut File) -> ParseResult<u32> {
@@ -35,7 +41,7 @@ fn parse_leb128(file: &mut File) -> ParseResult<u32> {
 
     let mut shift = 0;
     loop {
-        let value = parse_u8(file)?;
+        let value = u8::parse(file)?;
 
         result |= (value as u32 & 0x7f) << shift;
 
@@ -95,9 +101,9 @@ enum ValueType {
     F64,
 }
 
-impl ValueType {
+impl Parse for ValueType {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        let value_type = parse_u8(file)?;
+        let value_type = u8::parse(file)?;
 
         match value_type {
             0x7f => Ok(ValueType::I32),
@@ -112,12 +118,12 @@ impl ValueType {
     }
 }
 
-fn parse_result_type(file: &mut File) -> ParseResult<Vec<ValueType>> {
+fn parse_vec<T: Parse>(file: &mut File) -> ParseResult<Vec<T>> {
     let n = parse_u32(file)?;
 
     let mut result_type = vec![];
     for _ in 0..n {
-        result_type.push(ValueType::parse(file)?);
+        result_type.push(T::parse(file)?);
     }
 
     Ok(result_type)
@@ -138,9 +144,9 @@ impl fmt::Debug for FuncType {
     }
 }
 
-impl FuncType {
+impl Parse for FuncType {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        let marker = parse_u8(file)?;
+        let marker = u8::parse(file)?;
         if marker != 0x60 {
             return Err(ParseErr::Err(format!(
                 "Invalid marker found for FuncType: {}",
@@ -149,27 +155,16 @@ impl FuncType {
         }
 
         Ok(FuncType {
-            parameter_types: parse_result_type(file)?,
-            result_types: parse_result_type(file)?,
+            parameter_types: parse_vec(file)?,
+            result_types: parse_vec(file)?,
         })
     }
-}
-
-fn parse_types(file: &mut File) -> ParseResult<Vec<FuncType>> {
-    let n = parse_u32(file)?;
-
-    let mut func_types = vec![];
-    for _ in 0..n {
-        func_types.push(FuncType::parse(file)?);
-    }
-
-    Ok(func_types)
 }
 
 #[derive(Debug)]
 struct TypeIdx(u32);
 
-impl TypeIdx {
+impl Parse for TypeIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self(parse_u32(file)?))
     }
@@ -180,9 +175,9 @@ enum ElemType {
     FuncRef,
 }
 
-impl ElemType {
+impl Parse for ElemType {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        let result = match parse_u8(file)? {
+        let result = match u8::parse(file)? {
             0x70 => Self::FuncRef,
             elem_type => return Err(ParseErr::Err(format!("Invalid ElemType: {}", elem_type))),
         };
@@ -197,9 +192,9 @@ struct Limits {
     max: Option<u32>,
 }
 
-impl Limits {
+impl Parse for Limits {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        let has_max = parse_u8(file)? == 1;
+        let has_max = u8::parse(file)? == 1;
 
         let result = Self {
             min: parse_u32(file)?,
@@ -220,7 +215,7 @@ struct TableType {
     limits: Limits,
 }
 
-impl TableType {
+impl Parse for TableType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let result = Self {
             elem_type: ElemType::parse(file)?,
@@ -236,7 +231,7 @@ struct MemType {
     limits: Limits,
 }
 
-impl MemType {
+impl Parse for MemType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self {
             limits: Limits::parse(file)?,
@@ -250,9 +245,9 @@ enum Mutability {
     Variable,
 }
 
-impl Mutability {
+impl Parse for Mutability {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        Ok(match parse_u8(file)? {
+        Ok(match u8::parse(file)? {
             0x00 => Self::Constant,
             0x01 => Self::Variable,
             mutability => return Err(ParseErr::Err(format!("Invalid mutability: {}", mutability))),
@@ -266,7 +261,7 @@ struct GlobalType {
     mutability: Mutability,
 }
 
-impl GlobalType {
+impl Parse for GlobalType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self {
             value_type: ValueType::parse(file)?,
@@ -283,9 +278,9 @@ enum ImportDescriptor {
     Global(GlobalType),
 }
 
-impl ImportDescriptor {
+impl Parse for ImportDescriptor {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        Ok(match parse_u8(file)? {
+        Ok(match u8::parse(file)? {
             0x00 => Self::Func(TypeIdx::parse(file)?),
             0x01 => Self::Table(TableType::parse(file)?),
             0x02 => Self::Memory(MemType::parse(file)?),
@@ -308,14 +303,9 @@ impl fmt::Debug for Name {
     }
 }
 
-impl Name {
+impl Parse for Name {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        let n = parse_u32(file)?;
-
-        let mut result = vec![];
-        for _ in 0..n {
-            result.push(parse_u8(file)?);
-        }
+        let result = parse_vec(file)?;
 
         let result = match String::from_utf8(result) {
             Ok(result) => result,
@@ -342,7 +332,7 @@ impl fmt::Debug for Import {
     }
 }
 
-impl Import {
+impl Parse for Import {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Import {
             module: Name::parse(file)?,
@@ -350,17 +340,6 @@ impl Import {
             descriptor: ImportDescriptor::parse(file)?,
         })
     }
-}
-
-fn parse_imports(file: &mut File) -> ParseResult<Vec<Import>> {
-    let n = parse_u32(file)?;
-
-    let mut result = vec![];
-    for _ in 0..n {
-        result.push(Import::parse(file)?);
-    }
-
-    Ok(result)
 }
 
 #[derive(Debug)]
@@ -381,13 +360,13 @@ enum Section {
 
 impl Section {
     fn parse(file: &mut File) -> ParseResult<Section> {
-        let id = parse_u8(file)?;
+        let id = u8::parse(file)?;
         let size = parse_u32(file)?;
 
         let section = match id {
             00 => Section::Custom,
-            01 => Section::Type(parse_types(file)?),
-            02 => Section::Import(parse_imports(file)?),
+            01 => Section::Type(parse_vec(file)?),
+            02 => Section::Import(parse_vec(file)?),
             03 => Section::Function,
             04 => Section::Table,
             05 => Section::Memory,
