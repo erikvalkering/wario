@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 use std::fmt;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom};
 
 #[derive(Debug)]
 enum ParseErr {
@@ -385,7 +385,7 @@ impl Section {
             Section::Type(_) => {}
             Section::Import(_) => {}
             _ => {
-                let _contents = parse_u8_array(file, size as usize).unwrap();
+                file.seek(SeekFrom::Current(size as i64)).unwrap();
             }
         }
 
