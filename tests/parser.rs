@@ -167,8 +167,13 @@ impl Parse for FuncType {
     }
 }
 
-#[derive(Debug)]
 struct TypeIdx(u32);
+
+impl fmt::Debug for TypeIdx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "TypeIdx({:?})", self.0)
+    }
+}
 
 impl Parse for TypeIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
