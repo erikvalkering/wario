@@ -451,9 +451,9 @@ struct Module {
     preamble: Preamble,
     types: Vec<FuncType>,
     imports: Vec<Import>,
-    funcs: Vec<TypeIdx>,
-    mems: Vec<Limits>,
-    glob: Vec<Global>,
+    functions: Vec<TypeIdx>,
+    memories: Vec<Limits>,
+    globals: Vec<Global>,
 }
 
 impl Module {
@@ -468,18 +468,18 @@ impl Module {
             preamble,
             types: vec![],
             imports: vec![],
-            funcs: vec![],
-            mems: vec![],
-            glob: vec![],
+            functions: vec![],
+            memories: vec![],
+            globals: vec![],
         };
 
         for section in parse_sections(file)? {
             match section {
                 Section::Type(types) => module.types = types,
                 Section::Import(imports) => module.imports = imports,
-                Section::Function(funcs) => module.funcs = funcs,
-                Section::Memory(mems) => module.mems = mems,
-                Section::Global(glob) => module.glob = glob,
+                Section::Function(functions) => module.functions = functions,
+                Section::Memory(memories) => module.memories = memories,
+                Section::Global(globals) => module.globals = globals,
                 section => println!("Section {:?} not implemented yet, skipping", section),
             }
         }
