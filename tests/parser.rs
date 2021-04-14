@@ -396,8 +396,8 @@ enum Section {
     Data,
 }
 
-impl Section {
-    fn parse(file: &mut File) -> ParseResult<Section> {
+impl Parse for Section {
+    fn parse(file: &mut File) -> ParseResult<Self> {
         let id = u8::parse(file)?;
         let size = u32::parse(file)?;
 
