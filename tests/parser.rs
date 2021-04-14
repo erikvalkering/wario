@@ -354,6 +354,33 @@ impl Parse for Import {
 }
 
 #[derive(Debug)]
+enum Instruction {
+    // TODO: add real instructions
+    Nop,
+}
+
+#[derive(Debug)]
+struct Global {
+    global_type: GlobalType,
+    expression: Vec<Instruction>,
+}
+
+impl Parse for Global {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self {
+            global_type: Parse::parse(file)?,
+            expression: {
+                let mut expression = vec![];
+                while u8::parse(file)? != 0x0B {
+                    expression.push(Instruction::Nop)
+                }
+                expression
+            },
+        })
+    }
+}
+
+#[derive(Debug)]
 enum Section {
     Custom,
     Type(Vec<FuncType>),
@@ -361,7 +388,7 @@ enum Section {
     Function(Vec<TypeIdx>),
     Table,
     Memory(Vec<Limits>),
-    Global,
+    Global(Vec<Global>),
     Export,
     Start,
     Element,
@@ -381,7 +408,7 @@ impl Section {
             03 => Section::Function(Parse::parse(file)?),
             04 => Section::Table,
             05 => Section::Memory(Parse::parse(file)?),
-            06 => Section::Global,
+            06 => Section::Global(Parse::parse(file)?),
             07 => Section::Export,
             08 => Section::Start,
             09 => Section::Element,
@@ -395,6 +422,7 @@ impl Section {
             Section::Import(_) => {}
             Section::Function(_) => {}
             Section::Memory(_) => {}
+            Section::Global(_) => {}
             _ => {
                 file.seek(SeekFrom::Current(size as i64)).unwrap();
             }
@@ -425,6 +453,7 @@ struct Module {
     imports: Vec<Import>,
     funcs: Vec<TypeIdx>,
     mems: Vec<Limits>,
+    glob: Vec<Global>,
 }
 
 impl Module {
@@ -441,6 +470,7 @@ impl Module {
             imports: vec![],
             funcs: vec![],
             mems: vec![],
+            glob: vec![],
         };
 
         for section in parse_sections(file)? {
@@ -449,6 +479,7 @@ impl Module {
                 Section::Import(imports) => module.imports = imports,
                 Section::Function(funcs) => module.funcs = funcs,
                 Section::Memory(mems) => module.mems = mems,
+                Section::Global(glob) => module.glob = glob,
                 section => println!("Section {:?} not implemented yet, skipping", section),
             }
         }
