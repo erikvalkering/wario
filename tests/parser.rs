@@ -168,6 +168,10 @@ impl Parse for FuncType {
 }
 
 struct TypeIdx(u32);
+struct FuncIdx(u32);
+struct TableIdx(u32);
+struct MemIdx(u32);
+struct GlobalIdx(u32);
 
 impl fmt::Debug for TypeIdx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -175,7 +179,55 @@ impl fmt::Debug for TypeIdx {
     }
 }
 
+impl fmt::Debug for FuncIdx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FuncIdx({:?})", self.0)
+    }
+}
+
+impl fmt::Debug for TableIdx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "TableIdx({:?})", self.0)
+    }
+}
+
+impl fmt::Debug for MemIdx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "MemIdx({:?})", self.0)
+    }
+}
+
+impl fmt::Debug for GlobalIdx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "GlobalIdx({:?})", self.0)
+    }
+}
+
 impl Parse for TypeIdx {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self(Parse::parse(file)?))
+    }
+}
+
+impl Parse for FuncIdx {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self(Parse::parse(file)?))
+    }
+}
+
+impl Parse for TableIdx {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self(Parse::parse(file)?))
+    }
+}
+
+impl Parse for MemIdx {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self(Parse::parse(file)?))
+    }
+}
+
+impl Parse for GlobalIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self(Parse::parse(file)?))
     }
@@ -381,6 +433,46 @@ impl Parse for Global {
 }
 
 #[derive(Debug)]
+enum ExportDescriptor {
+    Func(FuncIdx),
+    Table(TableIdx),
+    Memory(MemIdx),
+    Global(GlobalIdx),
+}
+
+impl Parse for ExportDescriptor {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(match u8::parse(file)? {
+            0x00 => Self::Func(Parse::parse(file)?),
+            0x01 => Self::Table(Parse::parse(file)?),
+            0x02 => Self::Memory(Parse::parse(file)?),
+            0x03 => Self::Global(Parse::parse(file)?),
+            id => {
+                return Err(ParseErr::Err(format!(
+                    "Invalid export descriptor type: {}",
+                    id
+                )))
+            }
+        })
+    }
+}
+
+#[derive(Debug)]
+struct Export {
+    name: Name,
+    descriptor: ExportDescriptor,
+}
+
+impl Parse for Export {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self {
+            name: Parse::parse(file)?,
+            descriptor: Parse::parse(file)?,
+        })
+    }
+}
+
+#[derive(Debug)]
 enum Section {
     Custom,
     Type(Vec<FuncType>),
@@ -389,7 +481,7 @@ enum Section {
     Table,
     Memory(Vec<Limits>),
     Global(Vec<Global>),
-    Export,
+    Export(Vec<Export>),
     Start,
     Element,
     Code,
@@ -409,7 +501,7 @@ impl Parse for Section {
             04 => Section::Table,
             05 => Section::Memory(Parse::parse(file)?),
             06 => Section::Global(Parse::parse(file)?),
-            07 => Section::Export,
+            07 => Section::Export(Parse::parse(file)?),
             08 => Section::Start,
             09 => Section::Element,
             10 => Section::Code,
@@ -423,6 +515,7 @@ impl Parse for Section {
             Section::Function(_) => {}
             Section::Memory(_) => {}
             Section::Global(_) => {}
+            Section::Export(_) => {}
             _ => {
                 file.seek(SeekFrom::Current(size as i64)).unwrap();
             }
@@ -454,6 +547,7 @@ struct Module {
     functions: Vec<TypeIdx>,
     memories: Vec<Limits>,
     globals: Vec<Global>,
+    exports: Vec<Export>,
 }
 
 impl Module {
@@ -471,6 +565,7 @@ impl Module {
             functions: vec![],
             memories: vec![],
             globals: vec![],
+            exports: vec![],
         };
 
         for section in parse_sections(file)? {
@@ -480,6 +575,7 @@ impl Module {
                 Section::Function(functions) => module.functions = functions,
                 Section::Memory(memories) => module.memories = memories,
                 Section::Global(globals) => module.globals = globals,
+                Section::Export(exports) => module.exports = exports,
                 section => println!("Section {:?} not implemented yet, skipping", section),
             }
         }
