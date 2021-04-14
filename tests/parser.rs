@@ -177,7 +177,7 @@ impl fmt::Debug for TypeIdx {
 
 impl Parse for TypeIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        Ok(Self(u32::parse(file)?))
+        Ok(Self(Parse::parse(file)?))
     }
 }
 
