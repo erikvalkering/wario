@@ -345,10 +345,10 @@ impl fmt::Debug for Import {
 
 impl Parse for Import {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        Ok(Import {
-            module: Name::parse(file)?,
-            name: Name::parse(file)?,
-            descriptor: ImportDescriptor::parse(file)?,
+        Ok(Self {
+            module: Parse::parse(file)?,
+            name: Parse::parse(file)?,
+            descriptor: Parse::parse(file)?,
         })
     }
 }
