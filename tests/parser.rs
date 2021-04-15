@@ -111,6 +111,7 @@ impl Preamble {
 }
 
 #[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 enum ValueType {
     I32,
     I64,
