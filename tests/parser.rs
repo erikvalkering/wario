@@ -412,22 +412,31 @@ enum Instruction {
 }
 
 #[derive(Debug)]
+struct Expression(Vec<Instruction>);
+
+impl Parse for Expression {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        let mut result = vec![];
+
+        while u8::parse(file)? != 0x0B {
+            result.push(Instruction::Nop)
+        }
+
+        Ok(Self(result))
+    }
+}
+
+#[derive(Debug)]
 struct Global {
     global_type: GlobalType,
-    expression: Vec<Instruction>,
+    expression: Expression,
 }
 
 impl Parse for Global {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self {
             global_type: Parse::parse(file)?,
-            expression: {
-                let mut expression = vec![];
-                while u8::parse(file)? != 0x0B {
-                    expression.push(Instruction::Nop)
-                }
-                expression
-            },
+            expression: Parse::parse(file)?,
         })
     }
 }
