@@ -483,6 +483,41 @@ impl Parse for Export {
 }
 
 #[derive(Debug)]
+struct Code {
+    locals: Vec<ValueType>,
+    expression: Expression,
+}
+
+struct Locals {
+    n: u32,
+    t: ValueType,
+}
+
+impl Parse for Locals {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self {
+            n: Parse::parse(file)?,
+            t: Parse::parse(file)?,
+        })
+    }
+}
+
+impl Parse for Code {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        let _size = u32::parse(file)?;
+        let locals = Vec::<Locals>::parse(file)?
+            .iter()
+            .flat_map(|local| vec![local.t; local.n as usize])
+            .collect();
+
+        Ok(Self {
+            locals,
+            expression: Parse::parse(file)?,
+        })
+    }
+}
+
+#[derive(Debug)]
 enum Section {
     Custom,
     Type(Vec<FuncType>),
@@ -494,7 +529,7 @@ enum Section {
     Export(Vec<Export>),
     Start,
     Element,
-    Code,
+    Code(Vec<Code>),
     Data,
 }
 
@@ -514,7 +549,7 @@ impl Parse for Section {
             07 => Section::Export(Parse::parse(file)?),
             08 => Section::Start,
             09 => Section::Element,
-            10 => Section::Code,
+            10 => Section::Code(Parse::parse(file)?),
             11 => Section::Data,
             _ => return Err(ParseErr::Err(format!("Found unknown section id: {}", id))),
         };
@@ -526,6 +561,7 @@ impl Parse for Section {
             Section::Memory(_) => {}
             Section::Global(_) => {}
             Section::Export(_) => {}
+            Section::Code(_) => {}
             _ => {
                 file.seek(SeekFrom::Current(size as i64)).unwrap();
             }
@@ -558,6 +594,7 @@ struct Module {
     memories: Vec<Limits>,
     globals: Vec<Global>,
     exports: Vec<Export>,
+    codes: Vec<Code>,
 }
 
 impl Module {
@@ -576,6 +613,7 @@ impl Module {
             memories: vec![],
             globals: vec![],
             exports: vec![],
+            codes: vec![],
         };
 
         for section in parse_sections(file)? {
@@ -586,6 +624,7 @@ impl Module {
                 Section::Memory(memories) => module.memories = memories,
                 Section::Global(globals) => module.globals = globals,
                 Section::Export(exports) => module.exports = exports,
+                Section::Code(codes) => module.codes = codes,
                 section => println!("Section {:?} not implemented yet, skipping", section),
             }
         }
