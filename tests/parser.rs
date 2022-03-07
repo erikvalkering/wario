@@ -484,7 +484,7 @@ impl Parse for Export {
 #[derive(Debug)]
 struct Code {
     locals: Vec<ValueType>,
-    expression: Expression,
+    body: Expression,
 }
 
 struct Locals {
@@ -511,7 +511,7 @@ impl Parse for Code {
 
         Ok(Self {
             locals,
-            expression: Parse::parse(file)?,
+            body: Parse::parse(file)?,
         })
     }
 }
