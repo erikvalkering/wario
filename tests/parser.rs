@@ -468,8 +468,10 @@ impl Parse for Expression {
             let instruction = match opcode {
                 0x0B => break,
 
+                // Control instructions
                 0x00 => Instruction::Unreachable,
 
+                // Numeric instructions
                 0x41 => Instruction::I32Const(Parse::parse(file)?),
                 0x44 => Instruction::F64Const(Parse::parse(file)?),
 
