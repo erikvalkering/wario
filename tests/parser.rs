@@ -18,30 +18,31 @@ trait Parse: Sized {
 
 impl<T: Parse> Parse for Vec<T> {
     fn parse(file: &mut File) -> ParseResult<Self> {
-    let n = u32::parse(file)?;
+        let n = u32::parse(file)?;
+        // println!("vec len: {}", n);
 
-    let mut result_type = vec![];
-    for _ in 0..n {
-        result_type.push(T::parse(file)?);
-    }
+        let mut result_type = vec![];
+        for _ in 0..n {
+            result_type.push(T::parse(file)?);
+        }
 
-    Ok(result_type)
+        Ok(result_type)
     }
 }
 
 impl<const SIZE: usize> Parse for [u8; SIZE] {
     fn parse(file: &mut File) -> ParseResult<Self> {
-    let mut buf = [0; SIZE];
+        let mut buf = [0; SIZE];
 
-    match file.read(&mut buf) {
-        Err(err) => Err(ParseErr::Err(format!("Unable to read data: {}", err))),
-        Ok(s) if s == SIZE => Ok(buf),
-        Ok(0) => Err(ParseErr::Eof),
-        Ok(s) => Err(ParseErr::Err(format!(
-            "Unable to read data: expected size to be read: {} actual size read: {}",
-            SIZE, s
-        ))),
-    }
+        match file.read(&mut buf) {
+            Err(err) => Err(ParseErr::Err(format!("Unable to read data: {}", err))),
+            Ok(s) if s == SIZE => Ok(buf),
+            Ok(0) => Err(ParseErr::Eof),
+            Ok(s) => Err(ParseErr::Err(format!(
+                "Unable to read data: expected size to be read: {} actual size read: {}",
+                SIZE, s
+            ))),
+        }
     }
 }
 
