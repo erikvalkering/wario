@@ -449,6 +449,9 @@ enum Instruction {
     // Control instructions
     Unreachable,
 
+    // Variable instructions
+    GlobalSet(GlobalIdx),
+
     // Numeric instructions
     I32Const(i32),
     F64Const(f64),
@@ -471,6 +474,9 @@ impl Parse for Expression {
 
                 // Control instructions
                 0x00 => Instruction::Unreachable,
+
+                // Variable instructions
+                0x24 => Instruction::GlobalSet(Parse::parse(file)?),
 
                 // Numeric instructions
                 0x41 => Instruction::I32Const(Parse::parse(file)?),
