@@ -475,7 +475,7 @@ impl Parse for Expression {
                 0x41 => Instruction::I32Const(Parse::parse(file)?),
                 0x44 => Instruction::F64Const(Parse::parse(file)?),
 
-                _ => panic!("Unsupported opcode found: {}", opcode),
+                _ => panic!("Unsupported opcode found: {:#2X}", opcode),
             };
 
             result.push(instruction);
