@@ -470,8 +470,8 @@ impl Parse for Expression {
 
                 0x00 => Instruction::Unreachable,
 
-                0x41 => Instruction::I32Const(i32::parse(file)?),
-                0x44 => Instruction::F64Const(f64::parse(file)?),
+                0x41 => Instruction::I32Const(Parse::parse(file)?),
+                0x44 => Instruction::F64Const(Parse::parse(file)?),
 
                 _ => panic!("Unsupported opcode found: {}", opcode),
             };
