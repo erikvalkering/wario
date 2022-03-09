@@ -71,9 +71,39 @@ fn parse_leb128_u32(file: &mut File) -> ParseResult<u32> {
     Ok(result)
 }
 
+fn parse_leb128_i32(file: &mut File) -> ParseResult<i32> {
+    let mut result = 0i32;
+
+    let mut value;
+    let mut shift = 0;
+    loop {
+        value = u8::parse(file)?;
+
+        result |= (value as i32 & 0x7f) << shift;
+
+        if value & 0x80 == 0 {
+            break;
+        }
+
+        shift += 7;
+    }
+
+    if value & 0x40 != 0 {
+        result |= !0 << shift;
+    }
+
+    Ok(result)
+}
+
 impl Parse for u32 {
     fn parse(file: &mut File) -> ParseResult<Self> {
         parse_leb128_u32(file)
+    }
+}
+
+impl Parse for i32 {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        parse_leb128_i32(file)
     }
 }
 
@@ -420,6 +450,7 @@ enum Instruction {
     Unreachable,
 
     // Numeric instructions
+    I32Const(i32),
     F64Const(f64),
 }
 
@@ -439,6 +470,7 @@ impl Parse for Expression {
 
                 0x00 => Instruction::Unreachable,
 
+                0x41 => Instruction::I32Const(i32::parse(file)?),
                 0x44 => Instruction::F64Const(f64::parse(file)?),
 
                 _ => panic!("Unsupported opcode found: {}", opcode),
