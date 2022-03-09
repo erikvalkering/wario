@@ -478,6 +478,7 @@ enum Instruction {
     // Control instructions
     Unreachable,
     Block(BlockType, Expression),
+    Loop(BlockType, Expression),
     Return,
     Call(FuncIdx),
 
@@ -508,6 +509,7 @@ impl Parse for Expression {
                 // Control instructions
                 0x00 => Instruction::Unreachable,
                 0x02 => Instruction::Block(Parse::parse(file)?, Parse::parse(file)?),
+                0x03 => Instruction::Loop(Parse::parse(file)?, Parse::parse(file)?),
                 0x0F => Instruction::Return,
                 0x10 => Instruction::Call(Parse::parse(file)?),
 
