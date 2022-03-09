@@ -483,6 +483,7 @@ enum Instruction {
     Call(FuncIdx),
 
     // Variable instructions
+    LocalGet(LocalIdx),
     LocalSet(LocalIdx),
     GlobalSet(GlobalIdx),
 
@@ -514,6 +515,7 @@ impl Parse for Expression {
                 0x10 => Instruction::Call(Parse::parse(file)?),
 
                 // Variable instructions
+                0x20 => Instruction::LocalGet(Parse::parse(file)?),
                 0x21 => Instruction::LocalSet(Parse::parse(file)?),
                 0x24 => Instruction::GlobalSet(Parse::parse(file)?),
 
