@@ -448,6 +448,7 @@ impl Parse for Import {
 enum Instruction {
     // Control instructions
     Unreachable,
+    Call(FuncIdx),
 
     // Variable instructions
     GlobalSet(GlobalIdx),
@@ -474,6 +475,7 @@ impl Parse for Expression {
 
                 // Control instructions
                 0x00 => Instruction::Unreachable,
+                0x10 => Instruction::Call(Parse::parse(file)?),
 
                 // Variable instructions
                 0x24 => Instruction::GlobalSet(Parse::parse(file)?),
