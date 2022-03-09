@@ -520,10 +520,15 @@ impl Parse for Expression {
                 0x44 => Instruction::F64Const(Parse::parse(file)?),
                 0xA2 => Instruction::F64Mul,
 
-                _ => {
-                    println!("Decoded instructions so far: {:?}", result);
-                    panic!("Unsupported opcode found: {:#04X}", opcode)
-                }
+                _ => panic!(
+                    "
+                    Unsupported opcode found: {0:#04X} (stream pos = {1} ({1:#04X})).
+                    Decoded instructions so far: {2:?}
+                    ",
+                    opcode,
+                    file.stream_position().unwrap() - 1,
+                    result,
+                ),
             };
 
             result.push(instruction);
