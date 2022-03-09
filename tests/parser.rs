@@ -458,9 +458,26 @@ impl Parse for Import {
 }
 
 #[derive(Debug)]
+enum BlockType {
+    Empty,
+}
+
+impl Parse for BlockType {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        let id = u8::parse(file)?;
+
+        Ok(match id {
+            0x40 => BlockType::Empty,
+            _ => panic!("Unsupported blocktype: {}", id),
+        })
+    }
+}
+
+#[derive(Debug)]
 enum Instruction {
     // Control instructions
     Unreachable,
+    Block(BlockType, Expression),
     Return,
     Call(FuncIdx),
 
@@ -490,6 +507,7 @@ impl Parse for Expression {
 
                 // Control instructions
                 0x00 => Instruction::Unreachable,
+                0x02 => Instruction::Block(Parse::parse(file)?, Parse::parse(file)?),
                 0x0F => Instruction::Return,
                 0x10 => Instruction::Call(Parse::parse(file)?),
 
