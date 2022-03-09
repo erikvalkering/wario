@@ -528,15 +528,19 @@ impl Parse for Locals {
 impl Parse for Code {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let _size = u32::parse(file)?;
+        let start = file.stream_position().unwrap();
+
         let locals = Vec::<Locals>::parse(file)?
             .iter()
             .flat_map(|local| vec![local.t; local.n as usize])
             .collect();
 
-        Ok(Self {
-            locals,
-            body: Parse::parse(file)?,
-        })
+        let body = Parse::parse(file)?;
+
+        let stop = file.stream_position().unwrap();
+        assert_eq!(_size, (stop - start) as u32);
+
+        Ok(Self { locals, body })
     }
 }
 
@@ -560,6 +564,7 @@ impl Parse for Section {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let id = u8::parse(file)?;
         let size = u32::parse(file)?;
+        let start = file.stream_position().unwrap();
 
         let section = match id {
             00 => Section::Custom,
@@ -589,6 +594,10 @@ impl Parse for Section {
                 file.seek(SeekFrom::Current(size as i64)).unwrap();
             }
         }
+
+        let stop = file.stream_position().unwrap();
+
+        assert_eq!(size, (stop - start) as u32);
 
         Ok(section)
     }
