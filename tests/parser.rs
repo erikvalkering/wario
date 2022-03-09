@@ -51,7 +51,7 @@ impl Parse for u8 {
     }
 }
 
-fn parse_leb128(file: &mut File) -> ParseResult<u32> {
+fn parse_leb128_u32(file: &mut File) -> ParseResult<u32> {
     let mut result = 0u32;
 
     let mut shift = 0;
@@ -72,7 +72,7 @@ fn parse_leb128(file: &mut File) -> ParseResult<u32> {
 
 impl Parse for u32 {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        parse_leb128(file)
+        parse_leb128_u32(file)
     }
 }
 
