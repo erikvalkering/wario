@@ -76,6 +76,14 @@ impl Parse for u32 {
     }
 }
 
+impl Parse for f64 {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(f64::from_le_bytes(
+            <[u8; std::mem::size_of::<f64>()]>::parse(file)?,
+        ))
+    }
+}
+
 struct Preamble {
     magic: [u8; 4],
     version: [u8; 4],
@@ -407,8 +415,11 @@ impl Parse for Import {
 
 #[derive(Debug)]
 enum Instruction {
-    // TODO: add real instructions
-    Nop,
+    // Control instructions
+    Unreachable,
+
+    // Numeric instructions
+    F64Const(f64),
 }
 
 #[derive(Debug)]
@@ -418,8 +429,21 @@ impl Parse for Expression {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let mut result = vec![];
 
-        while u8::parse(file)? != 0x0B {
-            result.push(Instruction::Nop)
+
+        loop {
+            let opcode = u8::parse(file)?;
+
+            let instruction = match opcode {
+                0x0B => break,
+
+                0x00 => Instruction::Unreachable,
+
+                0x44 => Instruction::F64Const(f64::parse(file)?),
+
+                _ => panic!("Unsupported opcode found: {}", opcode),
+            };
+
+            result.push(instruction);
         }
 
         Ok(Self(result))
