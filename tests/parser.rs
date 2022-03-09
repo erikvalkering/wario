@@ -211,6 +211,7 @@ struct FuncIdx(u32);
 struct TableIdx(u32);
 struct MemIdx(u32);
 struct GlobalIdx(u32);
+struct LocalIdx(u32);
 
 impl fmt::Debug for TypeIdx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -242,6 +243,12 @@ impl fmt::Debug for GlobalIdx {
     }
 }
 
+impl fmt::Debug for LocalIdx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "LocalIdx({:?})", self.0)
+    }
+}
+
 impl Parse for TypeIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self(Parse::parse(file)?))
@@ -267,6 +274,12 @@ impl Parse for MemIdx {
 }
 
 impl Parse for GlobalIdx {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self(Parse::parse(file)?))
+    }
+}
+
+impl Parse for LocalIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self(Parse::parse(file)?))
     }
@@ -452,6 +465,7 @@ enum Instruction {
     Call(FuncIdx),
 
     // Variable instructions
+    LocalSet(LocalIdx),
     GlobalSet(GlobalIdx),
 
     // Numeric instructions
@@ -480,6 +494,7 @@ impl Parse for Expression {
                 0x10 => Instruction::Call(Parse::parse(file)?),
 
                 // Variable instructions
+                0x21 => Instruction::LocalSet(Parse::parse(file)?),
                 0x24 => Instruction::GlobalSet(Parse::parse(file)?),
 
                 // Numeric instructions
