@@ -1,12 +1,12 @@
 use std::fs::File;
 
-use wario::wasm;
 use wario::parser::Result;
+use wario::wasm;
 
 #[test]
 fn parse_wasm() -> Result<()> {
     use std::path::PathBuf;
-    let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "input.wasm"]
+    let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "mandelbrot.wasm"]
         .iter()
         .collect();
 
