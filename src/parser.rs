@@ -2,7 +2,7 @@ use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 
-use super::module::*;
+use super::wasm::*;
 
 #[derive(Debug)]
 enum ParseErr {
