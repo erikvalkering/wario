@@ -492,6 +492,7 @@ enum Instruction {
     Unreachable,
     Block(BlockType, Expression),
     Loop(BlockType, Expression),
+    If(BlockType, Expression, Expression),
     BranchIf(LabelIdx),
     Return,
     Call(FuncIdx),
@@ -524,12 +525,18 @@ impl Parse for Expression {
             let opcode = u8::parse(file)?;
 
             let instruction = match opcode {
-                0x0B => break,
+                0x05 => break, // else
+                0x0B => break, // end
 
                 // Control instructions
                 0x00 => Instruction::Unreachable,
                 0x02 => Instruction::Block(Parse::parse(file)?, Parse::parse(file)?),
                 0x03 => Instruction::Loop(Parse::parse(file)?, Parse::parse(file)?),
+                0x04 => Instruction::If(
+                    Parse::parse(file)?,
+                    Parse::parse(file)?,
+                    Parse::parse(file)?,
+                ),
                 0x0D => Instruction::BranchIf(Parse::parse(file)?),
                 0x0F => Instruction::Return,
                 0x10 => Instruction::Call(Parse::parse(file)?),
