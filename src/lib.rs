@@ -1,8 +1,5 @@
-mod parser;
-mod wasm;
-
-pub use crate::parser::Result;
-pub use crate::wasm::Module;
+pub mod parser;
+pub mod wasm;
 
 #[derive(Debug)]
 pub enum Instruction {

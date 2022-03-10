@@ -1,9 +1,10 @@
 use std::fs::File;
 
-use wario;
+use wario::wasm;
+use wario::parser::Result;
 
 #[test]
-fn parse_wasm() -> wario::Result<()> {
+fn parse_wasm() -> Result<()> {
     use std::path::PathBuf;
     let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "input.wasm"]
         .iter()
@@ -15,7 +16,7 @@ fn parse_wasm() -> wario::Result<()> {
         Err(err) => return Err(format!("Unable to open file: {}", err)),
     };
 
-    let module = wario::Module::parse(&mut file)?;
+    let module = wasm::Module::parse(&mut file)?;
     println!("{:#?}", module);
 
     Ok(())
