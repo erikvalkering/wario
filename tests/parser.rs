@@ -506,6 +506,7 @@ enum Instruction {
     F64Const(f64),
     I32GtSigned,
     I32Sub,
+    F64Add,
     F64Sub,
     F64Mul,
 }
@@ -542,6 +543,7 @@ impl Parse for Expression {
                 0x44 => Instruction::F64Const(Parse::parse(file)?),
                 0x4A => Instruction::I32GtSigned,
                 0x6B => Instruction::I32Sub,
+                0xA0 => Instruction::F64Add,
                 0xA1 => Instruction::F64Sub,
                 0xA2 => Instruction::F64Mul,
 
