@@ -525,7 +525,6 @@ impl Parse for Expression {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let mut result = vec![];
 
-
         loop {
             let opcode = u8::parse(file)?;
 
