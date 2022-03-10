@@ -1,3 +1,9 @@
+mod module;
+mod parser;
+
+pub use crate::module::Module;
+pub use crate::parser::Result;
+
 #[derive(Debug)]
 pub enum Instruction {
     Const(i32),
