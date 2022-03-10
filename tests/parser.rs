@@ -212,6 +212,7 @@ struct TableIdx(u32);
 struct MemIdx(u32);
 struct GlobalIdx(u32);
 struct LocalIdx(u32);
+struct LabelIdx(u32);
 
 impl fmt::Debug for TypeIdx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -249,6 +250,12 @@ impl fmt::Debug for LocalIdx {
     }
 }
 
+impl fmt::Debug for LabelIdx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "LabelIdx({:?})", self.0)
+    }
+}
+
 impl Parse for TypeIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self(Parse::parse(file)?))
@@ -280,6 +287,12 @@ impl Parse for GlobalIdx {
 }
 
 impl Parse for LocalIdx {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self(Parse::parse(file)?))
+    }
+}
+
+impl Parse for LabelIdx {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self(Parse::parse(file)?))
     }
@@ -479,6 +492,7 @@ enum Instruction {
     Unreachable,
     Block(BlockType, Expression),
     Loop(BlockType, Expression),
+    BranchIf(LabelIdx),
     Return,
     Call(FuncIdx),
 
@@ -513,6 +527,7 @@ impl Parse for Expression {
                 0x00 => Instruction::Unreachable,
                 0x02 => Instruction::Block(Parse::parse(file)?, Parse::parse(file)?),
                 0x03 => Instruction::Loop(Parse::parse(file)?, Parse::parse(file)?),
+                0x0D => Instruction::BranchIf(Parse::parse(file)?),
                 0x0F => Instruction::Return,
                 0x10 => Instruction::Call(Parse::parse(file)?),
 
