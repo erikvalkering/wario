@@ -501,6 +501,7 @@ enum Instruction {
     // Variable instructions
     LocalGet(LocalIdx),
     LocalSet(LocalIdx),
+    GlobalGet(GlobalIdx),
     GlobalSet(GlobalIdx),
 
     // Numeric instructions
@@ -546,6 +547,7 @@ impl Parse for Expression {
                 // Variable instructions
                 0x20 => Instruction::LocalGet(Parse::parse(file)?),
                 0x21 => Instruction::LocalSet(Parse::parse(file)?),
+                0x23 => Instruction::GlobalGet(Parse::parse(file)?),
                 0x24 => Instruction::GlobalSet(Parse::parse(file)?),
 
                 // Numeric instructions
