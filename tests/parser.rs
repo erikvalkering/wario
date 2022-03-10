@@ -513,6 +513,7 @@ enum Instruction {
     F64Add,
     F64Sub,
     F64Mul,
+    F64Div,
 }
 
 #[derive(Debug)]
@@ -559,6 +560,7 @@ impl Parse for Expression {
                 0xA0 => Instruction::F64Add,
                 0xA1 => Instruction::F64Sub,
                 0xA2 => Instruction::F64Mul,
+                0xA3 => Instruction::F64Div,
 
                 _ => panic!(
                     "
