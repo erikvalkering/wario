@@ -4,7 +4,7 @@ pub enum Instruction {
     Load(usize),
     Store(usize),
     Add,
-    Sub,
+    I32Sub, // TODO: can be replaced with wasm::Instruction
     Mul,
     Eq,
     LocalGet(usize),
@@ -123,7 +123,7 @@ impl Machine {
                     self.stack.push(left + right);
                 }
 
-                Instruction::Sub => {
+                Instruction::I32Sub => {
                     let right = self.stack.pop().unwrap();
                     let left = self.stack.pop().unwrap();
                     self.stack.push(left - right);
@@ -291,7 +291,7 @@ mod tests {
         let code = vec![
             Instruction::I32Const(a),
             Instruction::I32Const(b),
-            Instruction::Sub,
+            Instruction::I32Sub,
         ];
 
         let module_functions = vec![];
@@ -404,7 +404,7 @@ mod tests {
             code: vec![
                 Instruction::LocalGet(0),
                 Instruction::LocalGet(1),
-                Instruction::Sub,
+                Instruction::I32Sub,
             ],
         };
 
