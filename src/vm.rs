@@ -7,13 +7,13 @@ pub enum Instruction {
     I32Sub, // TODO: can be replaced with wasm::Instruction
     Mul,
     Eq,
-    LocalGet(usize),
-    Call(usize),
-    Return,
+    LocalGet(usize), // TODO: can be replaced with wasm::Instruction
+    Call(usize),     // TODO: can be replaced with wasm::Instruction
+    Return,          // TODO: can be replaced with wasm::Instruction
     Break(usize),
     BreakIf(usize),
-    Block(Vec<Instruction>),
-    Loop(Vec<Instruction>),
+    Block(Vec<Instruction>), // TODO: can be replaced with wasm::Instruction
+    Loop(Vec<Instruction>),  // TODO: can be replaced with wasm::Instruction
 }
 
 #[derive(Debug)]
