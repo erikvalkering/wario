@@ -251,4 +251,5 @@ pub struct Module {
     pub globals: Vec<Global>,
     pub exports: Vec<Export>,
     pub codes: Vec<Code>,
+    // TODO: Add funcs component (see section 2.5.3 from spec)
 }

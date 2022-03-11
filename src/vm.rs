@@ -44,6 +44,7 @@ pub enum ControlFlow {
 //
 //       Will this set the size of the local memory to 20?
 
+// TODO: Can be replaced with wasm::FuncType and wasm::Code (combine those into Function struct)
 pub struct ModuleFunction {
     pub param_count: usize,
     pub code: Vec<Instruction>,
