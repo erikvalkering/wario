@@ -365,6 +365,7 @@ impl Parse for Expression {
                 0x63 => Instruction::F64Lt,
                 0x64 => Instruction::F64Gt,
                 0x66 => Instruction::F64Ge,
+                0x6A => Instruction::I32Add,
                 0x6B => Instruction::I32Sub,
                 0xA0 => Instruction::F64Add,
                 0xA1 => Instruction::F64Sub,
