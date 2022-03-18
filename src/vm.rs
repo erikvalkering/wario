@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum Instruction {
-    Const(i32),
+    I32Const(i32), // TODO: can be replaced with wasm::Instruction
     Load(usize),
     Store(usize),
     Add,
@@ -111,7 +111,7 @@ impl Machine {
             }
 
             match instruction {
-                Instruction::Const(value) => self.stack.push(*value),
+                Instruction::I32Const(value) => self.stack.push(*value),
 
                 // TODO: Load/Store indirect (maybe to support arrays? first implement loops and conditionals?)
                 Instruction::Load(address) => self.stack.push(self.memory[*address]),
@@ -213,7 +213,7 @@ mod tests {
 
     #[test]
     fn constant() {
-        let code = vec![Instruction::Const(42)];
+        let code = vec![Instruction::I32Const(42)];
 
         let module_functions = vec![];
         let mut extern_functions = vec![];
@@ -267,8 +267,8 @@ mod tests {
         let b = 2;
 
         let code = vec![
-            Instruction::Const(a),
-            Instruction::Const(b),
+            Instruction::I32Const(a),
+            Instruction::I32Const(b),
             Instruction::Add,
         ];
 
@@ -289,8 +289,8 @@ mod tests {
         let b = 2;
 
         let code = vec![
-            Instruction::Const(a),
-            Instruction::Const(b),
+            Instruction::I32Const(a),
+            Instruction::I32Const(b),
             Instruction::Sub,
         ];
 
@@ -311,8 +311,8 @@ mod tests {
         let b = 3;
 
         let code = vec![
-            Instruction::Const(a),
-            Instruction::Const(b),
+            Instruction::I32Const(a),
+            Instruction::I32Const(b),
             Instruction::Mul,
         ];
 
@@ -334,11 +334,11 @@ mod tests {
         let c = 3;
 
         let code = vec![
-            Instruction::Const(a),
-            Instruction::Const(b),
+            Instruction::I32Const(a),
+            Instruction::I32Const(b),
             Instruction::Eq,
-            Instruction::Const(b),
-            Instruction::Const(c),
+            Instruction::I32Const(b),
+            Instruction::I32Const(c),
             Instruction::Eq,
         ];
 
@@ -374,7 +374,7 @@ mod tests {
 
         let function = ModuleFunction {
             param_count: 0,
-            code: vec![Instruction::Const(42)],
+            code: vec![Instruction::I32Const(42)],
         };
 
         let module_functions = vec![function];
@@ -394,8 +394,8 @@ mod tests {
         let b = 3;
 
         let code = vec![
-            Instruction::Const(a),
-            Instruction::Const(b),
+            Instruction::I32Const(a),
+            Instruction::I32Const(b),
             Instruction::Call(0),
         ];
 
@@ -451,8 +451,8 @@ mod tests {
         let b = 3;
 
         let code = vec![
-            Instruction::Const(a),
-            Instruction::Const(b),
+            Instruction::I32Const(a),
+            Instruction::I32Const(b),
             Instruction::Call(0),
         ];
         let function = ExternFunction {
@@ -474,13 +474,13 @@ mod tests {
     #[test]
     fn return_statement() {
         let code = vec![
-            Instruction::Const(42),
+            Instruction::I32Const(42),
             Instruction::Block(vec![
                 Instruction::Return,
-                Instruction::Const(43),
-                Instruction::Const(44),
+                Instruction::I32Const(43),
+                Instruction::I32Const(44),
             ]),
-            Instruction::Const(45),
+            Instruction::I32Const(45),
         ];
 
         let module_functions = vec![];
@@ -497,10 +497,10 @@ mod tests {
     #[test]
     fn simple_break() {
         let code = vec![
-            Instruction::Const(42),
+            Instruction::I32Const(42),
             Instruction::Break(0),
-            Instruction::Const(43),
-            Instruction::Const(44),
+            Instruction::I32Const(43),
+            Instruction::I32Const(44),
         ];
 
         let module_functions = vec![];
@@ -517,13 +517,13 @@ mod tests {
     #[test]
     fn nested_break_single() {
         let code = vec![
-            Instruction::Const(42),
+            Instruction::I32Const(42),
             Instruction::Block(vec![
                 Instruction::Break(0),
-                Instruction::Const(43),
-                Instruction::Const(44),
+                Instruction::I32Const(43),
+                Instruction::I32Const(44),
             ]),
-            Instruction::Const(45),
+            Instruction::I32Const(45),
         ];
 
         let module_functions = vec![];
@@ -540,13 +540,13 @@ mod tests {
     #[test]
     fn nested_break_double() {
         let code = vec![
-            Instruction::Const(42),
+            Instruction::I32Const(42),
             Instruction::Block(vec![
                 Instruction::Break(1),
-                Instruction::Const(43),
-                Instruction::Const(44),
+                Instruction::I32Const(43),
+                Instruction::I32Const(44),
             ]),
-            Instruction::Const(45),
+            Instruction::I32Const(45),
         ];
 
         let module_functions = vec![];
@@ -563,12 +563,12 @@ mod tests {
     #[test]
     fn simple_break_if() {
         let code = vec![
-            Instruction::Const(0),
+            Instruction::I32Const(0),
             Instruction::BreakIf(0),
-            Instruction::Const(42),
-            Instruction::Const(1),
+            Instruction::I32Const(42),
+            Instruction::I32Const(1),
             Instruction::BreakIf(0),
-            Instruction::Const(45),
+            Instruction::I32Const(45),
         ];
 
         let module_functions = vec![];
@@ -592,16 +592,16 @@ mod tests {
         // }
 
         let code = vec![
-            Instruction::Const(0),
+            Instruction::I32Const(0),
             Instruction::Store(0),
             Instruction::Loop(vec![
                 Instruction::Load(0),
-                Instruction::Const(4),
+                Instruction::I32Const(4),
                 Instruction::Eq,
                 Instruction::BreakIf(1),
-                Instruction::Const(42),
+                Instruction::I32Const(42),
                 Instruction::Load(0),
-                Instruction::Const(1),
+                Instruction::I32Const(1),
                 Instruction::Add,
                 Instruction::Store(0),
             ]),

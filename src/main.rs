@@ -9,7 +9,7 @@ fn main() {
     // }
 
     let code = vec![
-        Instruction::Const(0),
+        Instruction::I32Const(0),
         Instruction::Store(0),
         Instruction::Loop(vec![
             Instruction::Load(0),
@@ -32,17 +32,17 @@ fn main() {
         param_count: 1,
         code: vec![
             Instruction::LocalGet(0),
-            Instruction::Const(80),
+            Instruction::I32Const(80),
             Instruction::Eq,
             Instruction::Block(vec![
                 Instruction::Block(vec![
                     Instruction::BreakIf(0),
                     Instruction::LocalGet(0),
-                    Instruction::Const(1),
+                    Instruction::I32Const(1),
                     Instruction::Add,
                     Instruction::Break(1),
                 ]),
-                Instruction::Const(0),
+                Instruction::I32Const(0),
             ]),
         ],
     };
