@@ -361,6 +361,7 @@ impl Parse for Expression {
                 // Numeric instructions
                 0x41 => Instruction::I32Const(Parse::parse(file)?),
                 0x44 => Instruction::F64Const(Parse::parse(file)?),
+                0x46 => Instruction::I32Eq,
                 0x4A => Instruction::I32GtSigned,
                 0x63 => Instruction::F64Lt,
                 0x64 => Instruction::F64Gt,

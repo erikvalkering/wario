@@ -180,6 +180,7 @@ pub enum Instruction {
     // Numeric instructions
     I32Const(i32),
     F64Const(f64),
+    I32Eq,
     I32GtSigned,
     F64Lt,
     F64Gt,
