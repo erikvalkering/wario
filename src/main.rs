@@ -1,4 +1,4 @@
-use wario::{ExternFunction, Instruction, Machine, ModuleFunction};
+use wario::vm::{ExternFunction, Instruction, Machine, ModuleFunction};
 
 fn main() {
     // int i = 0;
