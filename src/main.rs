@@ -39,7 +39,7 @@ fn main() {
                     Instruction::BreakIf(0),
                     Instruction::LocalGet(0),
                     Instruction::I32Const(1),
-                    Instruction::Add,
+                    Instruction::I32Add,
                     Instruction::Break(1),
                 ]),
                 Instruction::I32Const(0),
