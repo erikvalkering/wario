@@ -186,6 +186,7 @@ pub enum Instruction {
     F64Ge,
     I32Add,
     I32Sub,
+    I32Mul,
     F64Add,
     F64Sub,
     F64Mul,
