@@ -33,7 +33,7 @@ fn main() {
         code: vec![
             Instruction::LocalGet(0),
             Instruction::I32Const(80),
-            Instruction::Eq,
+            Instruction::I32Eq,
             Instruction::Block(vec![
                 Instruction::Block(vec![
                     Instruction::BreakIf(0),

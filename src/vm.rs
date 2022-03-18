@@ -3,10 +3,10 @@ pub enum Instruction {
     I32Const(i32), // TODO: can be replaced with wasm::Instruction
     Load(usize),
     Store(usize),
-    I32Add, // TODO: can be replaced with wasm::Instruction
-    I32Sub, // TODO: can be replaced with wasm::Instruction
-    I32Mul, // TODO: can be replaced with wasm::Instruction
-    Eq,
+    I32Add,          // TODO: can be replaced with wasm::Instruction
+    I32Sub,          // TODO: can be replaced with wasm::Instruction
+    I32Mul,          // TODO: can be replaced with wasm::Instruction
+    I32Eq,           // TODO: can be replaced with wasm::Instruction
     LocalGet(usize), // TODO: can be replaced with wasm::Instruction
     Call(usize),     // TODO: can be replaced with wasm::Instruction
     Return,          // TODO: can be replaced with wasm::Instruction
@@ -136,7 +136,7 @@ impl Machine {
                     self.stack.push(left * right);
                 }
 
-                Instruction::Eq => {
+                Instruction::I32Eq => {
                     let right = self.stack.pop().unwrap();
                     let left = self.stack.pop().unwrap();
                     self.stack.push((left == right) as i32);
@@ -337,10 +337,10 @@ mod tests {
         let code = vec![
             Instruction::I32Const(a),
             Instruction::I32Const(b),
-            Instruction::Eq,
+            Instruction::I32Eq,
             Instruction::I32Const(b),
             Instruction::I32Const(c),
-            Instruction::Eq,
+            Instruction::I32Eq,
         ];
 
         let module_functions = vec![];
@@ -598,7 +598,7 @@ mod tests {
             Instruction::Loop(vec![
                 Instruction::Load(0),
                 Instruction::I32Const(4),
-                Instruction::Eq,
+                Instruction::I32Eq,
                 Instruction::BreakIf(1),
                 Instruction::I32Const(42),
                 Instruction::Load(0),
