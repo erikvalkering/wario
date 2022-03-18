@@ -1,8 +1,8 @@
 #[derive(Debug)]
 pub enum Instruction {
-    I32Const(i32), // TODO: can be replaced with wasm::Instruction
-    Load(usize),
-    Store(usize),
+    I32Const(i32),           // TODO: can be replaced with wasm::Instruction
+    I32Load(usize),          // TODO: can be replaced with wasm::Instruction
+    I32Store(usize),         // TODO: can be replaced with wasm::Instruction
     I32Add,                  // TODO: can be replaced with wasm::Instruction
     I32Sub,                  // TODO: can be replaced with wasm::Instruction
     I32Mul,                  // TODO: can be replaced with wasm::Instruction
@@ -115,8 +115,8 @@ impl Machine {
                 Instruction::I32Const(value) => self.stack.push(*value),
 
                 // TODO: Load/Store indirect (maybe to support arrays? first implement loops and conditionals?)
-                Instruction::Load(address) => self.stack.push(self.memory[*address]),
-                Instruction::Store(address) => self.memory[*address] = self.stack.pop().unwrap(),
+                Instruction::I32Load(address) => self.stack.push(self.memory[*address]),
+                Instruction::I32Store(address) => self.memory[*address] = self.stack.pop().unwrap(),
 
                 Instruction::I32Add => {
                     let right = self.stack.pop().unwrap();
@@ -230,7 +230,7 @@ mod tests {
 
     #[test]
     fn load() {
-        let code = vec![Instruction::Load(0)];
+        let code = vec![Instruction::I32Load(0)];
 
         let module_functions = vec![];
         let mut extern_functions = vec![];
@@ -247,7 +247,7 @@ mod tests {
 
     #[test]
     fn store() {
-        let code = vec![Instruction::Store(0)];
+        let code = vec![Instruction::I32Store(0)];
 
         let module_functions = vec![];
         let mut extern_functions = vec![];
@@ -594,17 +594,17 @@ mod tests {
 
         let code = vec![
             Instruction::I32Const(0),
-            Instruction::Store(0),
+            Instruction::I32Store(0),
             Instruction::Loop(vec![
-                Instruction::Load(0),
+                Instruction::I32Load(0),
                 Instruction::I32Const(4),
                 Instruction::I32Eq,
                 Instruction::BranchIf(1),
                 Instruction::I32Const(42),
-                Instruction::Load(0),
+                Instruction::I32Load(0),
                 Instruction::I32Const(1),
                 Instruction::I32Add,
-                Instruction::Store(0),
+                Instruction::I32Store(0),
             ]),
         ];
 

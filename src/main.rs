@@ -10,13 +10,13 @@ fn main() {
 
     let code = vec![
         Instruction::I32Const(0),
-        Instruction::Store(0),
+        Instruction::I32Store(0),
         Instruction::Loop(vec![
-            Instruction::Load(0),
+            Instruction::I32Load(0),
             Instruction::Call(1),
-            Instruction::Load(0),
+            Instruction::I32Load(0),
             Instruction::Call(0),
-            Instruction::Store(0),
+            Instruction::I32Store(0),
         ]),
     ];
 
