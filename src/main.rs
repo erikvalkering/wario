@@ -62,5 +62,5 @@ fn main() {
     let mut machine = Machine::new();
     machine.debugging = false;
 
-    machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+    machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 }

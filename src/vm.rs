@@ -62,7 +62,7 @@ impl ModuleFunction {
             .stack
             .split_off(machine.stack.len() - self.param_count);
 
-        machine.execute(&self.code, module_functions, extern_functions, &mut args);
+        machine.invoke(&self.code, module_functions, extern_functions, &mut args);
     }
 }
 
@@ -98,7 +98,7 @@ impl Machine {
         }
     }
 
-    pub fn execute(
+    pub fn invoke(
         self: &mut Self,
         code: &Vec<Instruction>,
         module_functions: &Vec<ModuleFunction>,
@@ -172,7 +172,7 @@ impl Machine {
                 }
 
                 Instruction::Block(block_code) => {
-                    match self.execute(block_code, module_functions, extern_functions, locals) {
+                    match self.invoke(block_code, module_functions, extern_functions, locals) {
                         None => {}
 
                         Some(ControlFlow::Return) => return Some(ControlFlow::Return),
@@ -185,7 +185,7 @@ impl Machine {
                 }
 
                 Instruction::Loop(loop_code) => loop {
-                    match self.execute(loop_code, module_functions, extern_functions, locals) {
+                    match self.invoke(loop_code, module_functions, extern_functions, locals) {
                         None => {}
 
                         Some(ControlFlow::Return) => return Some(ControlFlow::Return),
@@ -223,7 +223,7 @@ mod tests {
         let mut machine = Machine::new();
         assert_eq!(machine.stack, vec![]);
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -240,7 +240,7 @@ mod tests {
         assert_eq!(machine.stack, vec![]);
 
         machine.memory[0] = 42;
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -256,7 +256,7 @@ mod tests {
         let mut machine = Machine::new();
 
         machine.stack = vec![42];
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![]);
         assert_eq!(machine.memory[0], 42);
@@ -279,7 +279,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![a + b]);
     }
@@ -301,7 +301,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![a - b]);
     }
@@ -323,7 +323,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![a * b]);
     }
@@ -349,7 +349,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![(a == b) as i32, (b == c) as i32]);
     }
@@ -364,7 +364,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -384,7 +384,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -415,7 +415,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![a - b]);
     }
@@ -440,7 +440,7 @@ mod tests {
 
             let mut machine = Machine::new();
 
-            machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+            machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
         }
 
         assert_eq!(function_was_called, true);
@@ -467,7 +467,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![a - b]);
     }
@@ -490,7 +490,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -510,7 +510,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -533,7 +533,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42, 45]);
     }
@@ -556,7 +556,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -578,7 +578,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
     }
@@ -614,7 +614,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
-        machine.execute(&code, &module_functions, &mut extern_functions, &mut locals);
+        machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42, 42, 42, 42]);
     }
