@@ -19,7 +19,7 @@ pub enum Instruction {
 #[derive(Debug)]
 pub enum ControlFlow {
     Return,
-    Break(usize),
+    Branch(usize),
 }
 
 // TODO: add all four datatypes: i32, i64, f32, f64
@@ -162,12 +162,12 @@ impl Machine {
                 }
 
                 Instruction::Return => return Some(ControlFlow::Return),
-                Instruction::Branch(level) => return Some(ControlFlow::Break(*level)),
+                Instruction::Branch(level) => return Some(ControlFlow::Branch(*level)),
                 Instruction::BranchIf(level) => {
                     let condition = self.stack.pop().unwrap();
 
                     if condition != 0 {
-                        return Some(ControlFlow::Break(*level));
+                        return Some(ControlFlow::Branch(*level));
                     }
                 }
 
@@ -176,9 +176,9 @@ impl Machine {
                         None => {}
 
                         Some(ControlFlow::Return) => return Some(ControlFlow::Return),
-                        Some(ControlFlow::Break(level)) => {
+                        Some(ControlFlow::Branch(level)) => {
                             if level > 0 {
-                                return Some(ControlFlow::Break(level - 1));
+                                return Some(ControlFlow::Branch(level - 1));
                             }
                         }
                     }
@@ -189,9 +189,9 @@ impl Machine {
                         None => {}
 
                         Some(ControlFlow::Return) => return Some(ControlFlow::Return),
-                        Some(ControlFlow::Break(level)) => {
+                        Some(ControlFlow::Branch(level)) => {
                             if level > 0 {
-                                return Some(ControlFlow::Break(level - 1));
+                                return Some(ControlFlow::Branch(level - 1));
                             }
                         }
                     }
