@@ -160,6 +160,12 @@ pub enum BlockType {
 }
 
 #[derive(Debug)]
+pub struct MemArg {
+    pub align: u32,
+    pub offset: u32,
+}
+
+#[derive(Debug)]
 pub enum Instruction {
     // Control instructions
     Unreachable,
@@ -176,6 +182,10 @@ pub enum Instruction {
     LocalSet(LocalIdx),
     GlobalGet(GlobalIdx),
     GlobalSet(GlobalIdx),
+
+    // Memory instructions
+    I32Load(MemArg),
+    I32Store(MemArg),
 
     // Numeric instructions
     I32Const(i32),

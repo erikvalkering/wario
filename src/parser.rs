@@ -327,6 +327,15 @@ impl Parse for BlockType {
     }
 }
 
+impl Parse for MemArg {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(Self {
+            align: Parse::parse(file)?,
+            offset: Parse::parse(file)?,
+        })
+    }
+}
+
 impl Parse for Expression {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let mut result = vec![];
@@ -357,6 +366,10 @@ impl Parse for Expression {
                 0x21 => Instruction::LocalSet(Parse::parse(file)?),
                 0x23 => Instruction::GlobalGet(Parse::parse(file)?),
                 0x24 => Instruction::GlobalSet(Parse::parse(file)?),
+
+                // Memory instructions
+                0x28 => Instruction::I32Load(Parse::parse(file)?),
+                0x36 => Instruction::I32Store(Parse::parse(file)?),
 
                 // Numeric instructions
                 0x41 => Instruction::I32Const(Parse::parse(file)?),
