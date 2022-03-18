@@ -36,11 +36,11 @@ fn main() {
             Instruction::I32Eq,
             Instruction::Block(vec![
                 Instruction::Block(vec![
-                    Instruction::BreakIf(0),
+                    Instruction::BranchIf(0),
                     Instruction::LocalGet(0),
                     Instruction::I32Const(1),
                     Instruction::I32Add,
-                    Instruction::Break(1),
+                    Instruction::Branch(1),
                 ]),
                 Instruction::I32Const(0),
             ]),

@@ -3,15 +3,15 @@ pub enum Instruction {
     I32Const(i32), // TODO: can be replaced with wasm::Instruction
     Load(usize),
     Store(usize),
-    I32Add,          // TODO: can be replaced with wasm::Instruction
-    I32Sub,          // TODO: can be replaced with wasm::Instruction
-    I32Mul,          // TODO: can be replaced with wasm::Instruction
-    I32Eq,           // TODO: can be replaced with wasm::Instruction
-    LocalGet(usize), // TODO: can be replaced with wasm::Instruction
-    Call(usize),     // TODO: can be replaced with wasm::Instruction
-    Return,          // TODO: can be replaced with wasm::Instruction
-    Break(usize),
-    BreakIf(usize),
+    I32Add,                  // TODO: can be replaced with wasm::Instruction
+    I32Sub,                  // TODO: can be replaced with wasm::Instruction
+    I32Mul,                  // TODO: can be replaced with wasm::Instruction
+    I32Eq,                   // TODO: can be replaced with wasm::Instruction
+    LocalGet(usize),         // TODO: can be replaced with wasm::Instruction
+    Call(usize),             // TODO: can be replaced with wasm::Instruction
+    Return,                  // TODO: can be replaced with wasm::Instruction
+    Branch(usize),           // TODO: can be replaced with wasm::Instruction
+    BranchIf(usize),         // TODO: can be replaced with wasm::Instruction
     Block(Vec<Instruction>), // TODO: can be replaced with wasm::Instruction
     Loop(Vec<Instruction>),  // TODO: can be replaced with wasm::Instruction
 }
@@ -162,8 +162,8 @@ impl Machine {
                 }
 
                 Instruction::Return => return Some(ControlFlow::Return),
-                Instruction::Break(level) => return Some(ControlFlow::Break(*level)),
-                Instruction::BreakIf(level) => {
+                Instruction::Branch(level) => return Some(ControlFlow::Break(*level)),
+                Instruction::BranchIf(level) => {
                     let condition = self.stack.pop().unwrap();
 
                     if condition != 0 {
@@ -499,7 +499,7 @@ mod tests {
     fn simple_break() {
         let code = vec![
             Instruction::I32Const(42),
-            Instruction::Break(0),
+            Instruction::Branch(0),
             Instruction::I32Const(43),
             Instruction::I32Const(44),
         ];
@@ -520,7 +520,7 @@ mod tests {
         let code = vec![
             Instruction::I32Const(42),
             Instruction::Block(vec![
-                Instruction::Break(0),
+                Instruction::Branch(0),
                 Instruction::I32Const(43),
                 Instruction::I32Const(44),
             ]),
@@ -543,7 +543,7 @@ mod tests {
         let code = vec![
             Instruction::I32Const(42),
             Instruction::Block(vec![
-                Instruction::Break(1),
+                Instruction::Branch(1),
                 Instruction::I32Const(43),
                 Instruction::I32Const(44),
             ]),
@@ -565,10 +565,10 @@ mod tests {
     fn simple_break_if() {
         let code = vec![
             Instruction::I32Const(0),
-            Instruction::BreakIf(0),
+            Instruction::BranchIf(0),
             Instruction::I32Const(42),
             Instruction::I32Const(1),
-            Instruction::BreakIf(0),
+            Instruction::BranchIf(0),
             Instruction::I32Const(45),
         ];
 
@@ -599,7 +599,7 @@ mod tests {
                 Instruction::Load(0),
                 Instruction::I32Const(4),
                 Instruction::I32Eq,
-                Instruction::BreakIf(1),
+                Instruction::BranchIf(1),
                 Instruction::I32Const(42),
                 Instruction::Load(0),
                 Instruction::I32Const(1),
