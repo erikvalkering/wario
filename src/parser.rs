@@ -336,7 +336,7 @@ impl Parse for MemArg {
     }
 }
 
-impl Parse for Expression {
+impl Parse for Vec<Instruction> {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let mut result = vec![];
 
@@ -401,7 +401,7 @@ impl Parse for Expression {
             result.push(instruction);
         }
 
-        Ok(Self(result))
+        Ok(result)
     }
 }
 

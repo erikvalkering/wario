@@ -169,9 +169,9 @@ pub struct MemArg {
 pub enum Instruction {
     // Control instructions
     Unreachable,
-    Block(BlockType, Expression),
-    Loop(BlockType, Expression),
-    If(BlockType, Expression, Expression),
+    Block(BlockType, Vec<Instruction>),
+    Loop(BlockType, Vec<Instruction>),
+    If(BlockType, Vec<Instruction>, Vec<Instruction>),
     Branch(LabelIdx),
     BranchIf(LabelIdx),
     Return,
@@ -205,12 +205,9 @@ pub enum Instruction {
 }
 
 #[derive(Debug)]
-pub struct Expression(pub Vec<Instruction>);
-
-#[derive(Debug)]
 pub struct Global {
     pub global_type: GlobalType,
-    pub expression: Expression,
+    pub expression: Vec<Instruction>,
 }
 
 #[derive(Debug)]
@@ -230,7 +227,7 @@ pub struct Export {
 #[derive(Debug)]
 pub struct Code {
     pub locals: Vec<ValueType>,
-    pub body: Expression,
+    pub body: Vec<Instruction>,
 }
 
 pub struct Locals {
