@@ -1,5 +1,5 @@
 use wario::vm::{ExternFunction, Instruction, Machine, ModuleFunction};
-use wario::wasm::{LocalIdx, MemArg};
+use wario::wasm::{FuncIdx, LocalIdx, MemArg};
 
 fn main() {
     // int i = 0;
@@ -20,12 +20,12 @@ fn main() {
                 align: 0,
                 offset: 0,
             }),
-            Instruction::Call(1),
+            Instruction::Call(FuncIdx(1)),
             Instruction::I32Load(MemArg {
                 align: 0,
                 offset: 0,
             }),
-            Instruction::Call(0),
+            Instruction::Call(FuncIdx(0)),
             Instruction::I32Store(MemArg {
                 align: 0,
                 offset: 0,

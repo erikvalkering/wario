@@ -1,21 +1,21 @@
-use super::wasm::{LocalIdx, MemArg};
+use super::wasm::{FuncIdx, LocalIdx, MemArg};
 
 #[derive(Debug)]
 pub enum Instruction {
-    I32Const(i32),                 // TODO: can be replaced with wasm::Instruction
-    I32Load(MemArg),  // TODO: can be replaced with wasm::Instruction
-    I32Store(MemArg), // TODO: can be replaced with wasm::Instruction
-    I32Add,                        // TODO: can be replaced with wasm::Instruction
-    I32Sub,                          // TODO: can be replaced with wasm::Instruction
-    I32Mul,                          // TODO: can be replaced with wasm::Instruction
-    I32Eq,                           // TODO: can be replaced with wasm::Instruction
+    I32Const(i32),           // TODO: can be replaced with wasm::Instruction
+    I32Load(MemArg),         // TODO: can be replaced with wasm::Instruction
+    I32Store(MemArg),        // TODO: can be replaced with wasm::Instruction
+    I32Add,                  // TODO: can be replaced with wasm::Instruction
+    I32Sub,                  // TODO: can be replaced with wasm::Instruction
+    I32Mul,                  // TODO: can be replaced with wasm::Instruction
+    I32Eq,                   // TODO: can be replaced with wasm::Instruction
     LocalGet(LocalIdx),      // TODO: can be replaced with wasm::Instruction
-    Call(usize),                  // TODO: can be replaced with wasm::Instruction
-    Return,                          // TODO: can be replaced with wasm::Instruction
-    Branch(usize),                   // TODO: can be replaced with wasm::Instruction
-    BranchIf(usize),              // TODO: can be replaced with wasm::Instruction
-    Block(Vec<Instruction>),      // TODO: can be replaced with wasm::Instruction
-    Loop(Vec<Instruction>),       // TODO: can be replaced with wasm::Instruction
+    Call(FuncIdx),           // TODO: can be replaced with wasm::Instruction
+    Return,                  // TODO: can be replaced with wasm::Instruction
+    Branch(usize),           // TODO: can be replaced with wasm::Instruction
+    BranchIf(usize),         // TODO: can be replaced with wasm::Instruction
+    Block(Vec<Instruction>), // TODO: can be replaced with wasm::Instruction
+    Loop(Vec<Instruction>),  // TODO: can be replaced with wasm::Instruction
 }
 
 #[derive(Debug)]
@@ -154,8 +154,8 @@ impl Machine {
                     self.stack.push(locals[*address as usize])
                 }
 
-                Instruction::Call(function_index) => {
-                    let function_index = *function_index;
+                Instruction::Call(FuncIdx(function_index)) => {
+                    let function_index = *function_index as usize;
 
                     if function_index < module_functions.len() {
                         module_functions[function_index].call(
@@ -385,7 +385,7 @@ mod tests {
 
     #[test]
     fn call_module_function() {
-        let code = vec![Instruction::Call(0)];
+        let code = vec![Instruction::Call(FuncIdx(0))];
 
         let function = ModuleFunction {
             param_count: 0,
@@ -411,7 +411,7 @@ mod tests {
         let code = vec![
             Instruction::I32Const(a),
             Instruction::I32Const(b),
-            Instruction::Call(0),
+            Instruction::Call(FuncIdx(0)),
         ];
 
         let function = ModuleFunction {
@@ -436,7 +436,7 @@ mod tests {
 
     #[test]
     fn call_extern_function() {
-        let code = vec![Instruction::Call(0)];
+        let code = vec![Instruction::Call(FuncIdx(0))];
 
         let mut function_was_called = false;
         {
@@ -468,7 +468,7 @@ mod tests {
         let code = vec![
             Instruction::I32Const(a),
             Instruction::I32Const(b),
-            Instruction::Call(0),
+            Instruction::Call(FuncIdx(0)),
         ];
         let function = ExternFunction {
             param_count: 2,
