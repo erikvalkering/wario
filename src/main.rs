@@ -1,5 +1,5 @@
 use wario::vm::{ExternFunction, Instruction, Machine, ModuleFunction};
-use wario::wasm::MemArg;
+use wario::wasm::{LocalIdx, MemArg};
 
 fn main() {
     // int i = 0;
@@ -44,13 +44,13 @@ fn main() {
     let move_player = ModuleFunction {
         param_count: 1,
         code: vec![
-            Instruction::LocalGet(0),
+            Instruction::LocalGet(LocalIdx(0)),
             Instruction::I32Const(80),
             Instruction::I32Eq,
             Instruction::Block(vec![
                 Instruction::Block(vec![
                     Instruction::BranchIf(0),
-                    Instruction::LocalGet(0),
+                    Instruction::LocalGet(LocalIdx(0)),
                     Instruction::I32Const(1),
                     Instruction::I32Add,
                     Instruction::Branch(1),

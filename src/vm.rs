@@ -1,4 +1,4 @@
-use super::wasm::MemArg;
+use super::wasm::{LocalIdx, MemArg};
 
 #[derive(Debug)]
 pub enum Instruction {
@@ -6,13 +6,13 @@ pub enum Instruction {
     I32Load(MemArg),  // TODO: can be replaced with wasm::Instruction
     I32Store(MemArg), // TODO: can be replaced with wasm::Instruction
     I32Add,                        // TODO: can be replaced with wasm::Instruction
-    I32Sub,                        // TODO: can be replaced with wasm::Instruction
-    I32Mul,                        // TODO: can be replaced with wasm::Instruction
-    I32Eq,                        // TODO: can be replaced with wasm::Instruction
-    LocalGet(usize),              // TODO: can be replaced with wasm::Instruction
+    I32Sub,                          // TODO: can be replaced with wasm::Instruction
+    I32Mul,                          // TODO: can be replaced with wasm::Instruction
+    I32Eq,                           // TODO: can be replaced with wasm::Instruction
+    LocalGet(LocalIdx),      // TODO: can be replaced with wasm::Instruction
     Call(usize),                  // TODO: can be replaced with wasm::Instruction
-    Return,                       // TODO: can be replaced with wasm::Instruction
-    Branch(usize),                // TODO: can be replaced with wasm::Instruction
+    Return,                          // TODO: can be replaced with wasm::Instruction
+    Branch(usize),                   // TODO: can be replaced with wasm::Instruction
     BranchIf(usize),              // TODO: can be replaced with wasm::Instruction
     Block(Vec<Instruction>),      // TODO: can be replaced with wasm::Instruction
     Loop(Vec<Instruction>),       // TODO: can be replaced with wasm::Instruction
@@ -150,7 +150,9 @@ impl Machine {
 
                 // TODO: Indirect addressing to support arrays?
                 // TODO: LocalSet?
-                Instruction::LocalGet(address) => self.stack.push(locals[*address]),
+                Instruction::LocalGet(LocalIdx(address)) => {
+                    self.stack.push(locals[*address as usize])
+                }
 
                 Instruction::Call(function_index) => {
                     let function_index = *function_index;
@@ -368,7 +370,7 @@ mod tests {
 
     #[test]
     fn localget() {
-        let code = vec![Instruction::LocalGet(0)];
+        let code = vec![Instruction::LocalGet(LocalIdx(0))];
 
         let module_functions = vec![];
         let mut extern_functions = vec![];
@@ -415,8 +417,8 @@ mod tests {
         let function = ModuleFunction {
             param_count: 2,
             code: vec![
-                Instruction::LocalGet(0),
-                Instruction::LocalGet(1),
+                Instruction::LocalGet(LocalIdx(0)),
+                Instruction::LocalGet(LocalIdx(1)),
                 Instruction::I32Sub,
             ],
         };
