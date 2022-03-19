@@ -1,19 +1,21 @@
+use super::wasm::MemArg;
+
 #[derive(Debug)]
 pub enum Instruction {
-    I32Const(i32),           // TODO: can be replaced with wasm::Instruction
-    I32Load(usize),          // TODO: can be replaced with wasm::Instruction
-    I32Store(usize),         // TODO: can be replaced with wasm::Instruction
-    I32Add,                  // TODO: can be replaced with wasm::Instruction
-    I32Sub,                  // TODO: can be replaced with wasm::Instruction
-    I32Mul,                  // TODO: can be replaced with wasm::Instruction
-    I32Eq,                   // TODO: can be replaced with wasm::Instruction
-    LocalGet(usize),         // TODO: can be replaced with wasm::Instruction
-    Call(usize),             // TODO: can be replaced with wasm::Instruction
-    Return,                  // TODO: can be replaced with wasm::Instruction
-    Branch(usize),           // TODO: can be replaced with wasm::Instruction
-    BranchIf(usize),         // TODO: can be replaced with wasm::Instruction
-    Block(Vec<Instruction>), // TODO: can be replaced with wasm::Instruction
-    Loop(Vec<Instruction>),  // TODO: can be replaced with wasm::Instruction
+    I32Const(i32),                // TODO: can be replaced with wasm::Instruction
+    I32Load(MemArg), // TODO: can be replaced with wasm::Instruction
+    I32Store(usize),              // TODO: can be replaced with wasm::Instruction
+    I32Add,                       // TODO: can be replaced with wasm::Instruction
+    I32Sub,                       // TODO: can be replaced with wasm::Instruction
+    I32Mul,                       // TODO: can be replaced with wasm::Instruction
+    I32Eq,                        // TODO: can be replaced with wasm::Instruction
+    LocalGet(usize),              // TODO: can be replaced with wasm::Instruction
+    Call(usize),                  // TODO: can be replaced with wasm::Instruction
+    Return,                       // TODO: can be replaced with wasm::Instruction
+    Branch(usize),                // TODO: can be replaced with wasm::Instruction
+    BranchIf(usize),              // TODO: can be replaced with wasm::Instruction
+    Block(Vec<Instruction>),      // TODO: can be replaced with wasm::Instruction
+    Loop(Vec<Instruction>),       // TODO: can be replaced with wasm::Instruction
 }
 
 #[derive(Debug)]
@@ -115,7 +117,9 @@ impl Machine {
                 Instruction::I32Const(value) => self.stack.push(*value),
 
                 // TODO: Load/Store indirect (maybe to support arrays? first implement loops and conditionals?)
-                Instruction::I32Load(address) => self.stack.push(self.memory[*address]),
+                Instruction::I32Load(memarg) => {
+                    self.stack.push(self.memory[memarg.offset as usize])
+                }
                 Instruction::I32Store(address) => self.memory[*address] = self.stack.pop().unwrap(),
 
                 Instruction::I32Add => {
@@ -230,7 +234,10 @@ mod tests {
 
     #[test]
     fn load() {
-        let code = vec![Instruction::I32Load(0)];
+        let code = vec![Instruction::I32Load(MemArg {
+            align: 0,
+            offset: 0,
+        })];
 
         let module_functions = vec![];
         let mut extern_functions = vec![];
@@ -596,12 +603,18 @@ mod tests {
             Instruction::I32Const(0),
             Instruction::I32Store(0),
             Instruction::Loop(vec![
-                Instruction::I32Load(0),
+                Instruction::I32Load(MemArg {
+                    align: 0,
+                    offset: 0,
+                }),
                 Instruction::I32Const(4),
                 Instruction::I32Eq,
                 Instruction::BranchIf(1),
                 Instruction::I32Const(42),
-                Instruction::I32Load(0),
+                Instruction::I32Load(MemArg {
+                    align: 0,
+                    offset: 0,
+                }),
                 Instruction::I32Const(1),
                 Instruction::I32Add,
                 Instruction::I32Store(0),

@@ -1,4 +1,5 @@
 use wario::vm::{ExternFunction, Instruction, Machine, ModuleFunction};
+use wario::wasm::MemArg;
 
 fn main() {
     // int i = 0;
@@ -12,9 +13,15 @@ fn main() {
         Instruction::I32Const(0),
         Instruction::I32Store(0),
         Instruction::Loop(vec![
-            Instruction::I32Load(0),
+            Instruction::I32Load(MemArg {
+                align: 0,
+                offset: 0,
+            }),
             Instruction::Call(1),
-            Instruction::I32Load(0),
+            Instruction::I32Load(MemArg {
+                align: 0,
+                offset: 0,
+            }),
             Instruction::Call(0),
             Instruction::I32Store(0),
         ]),
