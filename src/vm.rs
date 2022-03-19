@@ -2,12 +2,12 @@ use super::wasm::MemArg;
 
 #[derive(Debug)]
 pub enum Instruction {
-    I32Const(i32),                // TODO: can be replaced with wasm::Instruction
-    I32Load(MemArg), // TODO: can be replaced with wasm::Instruction
-    I32Store(usize),              // TODO: can be replaced with wasm::Instruction
-    I32Add,                       // TODO: can be replaced with wasm::Instruction
-    I32Sub,                       // TODO: can be replaced with wasm::Instruction
-    I32Mul,                       // TODO: can be replaced with wasm::Instruction
+    I32Const(i32),                 // TODO: can be replaced with wasm::Instruction
+    I32Load(MemArg),  // TODO: can be replaced with wasm::Instruction
+    I32Store(MemArg), // TODO: can be replaced with wasm::Instruction
+    I32Add,                        // TODO: can be replaced with wasm::Instruction
+    I32Sub,                        // TODO: can be replaced with wasm::Instruction
+    I32Mul,                        // TODO: can be replaced with wasm::Instruction
     I32Eq,                        // TODO: can be replaced with wasm::Instruction
     LocalGet(usize),              // TODO: can be replaced with wasm::Instruction
     Call(usize),                  // TODO: can be replaced with wasm::Instruction
@@ -120,7 +120,9 @@ impl Machine {
                 Instruction::I32Load(memarg) => {
                     self.stack.push(self.memory[memarg.offset as usize])
                 }
-                Instruction::I32Store(address) => self.memory[*address] = self.stack.pop().unwrap(),
+                Instruction::I32Store(memarg) => {
+                    self.memory[memarg.offset as usize] = self.stack.pop().unwrap()
+                }
 
                 Instruction::I32Add => {
                     let right = self.stack.pop().unwrap();
@@ -254,7 +256,10 @@ mod tests {
 
     #[test]
     fn store() {
-        let code = vec![Instruction::I32Store(0)];
+        let code = vec![Instruction::I32Store(MemArg {
+            align: 0,
+            offset: 0,
+        })];
 
         let module_functions = vec![];
         let mut extern_functions = vec![];
@@ -601,7 +606,10 @@ mod tests {
 
         let code = vec![
             Instruction::I32Const(0),
-            Instruction::I32Store(0),
+            Instruction::I32Store(MemArg {
+                align: 0,
+                offset: 0,
+            }),
             Instruction::Loop(vec![
                 Instruction::I32Load(MemArg {
                     align: 0,
@@ -617,7 +625,10 @@ mod tests {
                 }),
                 Instruction::I32Const(1),
                 Instruction::I32Add,
-                Instruction::I32Store(0),
+                Instruction::I32Store(MemArg {
+                    align: 0,
+                    offset: 0,
+                }),
             ]),
         ];
 

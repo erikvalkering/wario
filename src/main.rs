@@ -11,7 +11,10 @@ fn main() {
 
     let code = vec![
         Instruction::I32Const(0),
-        Instruction::I32Store(0),
+        Instruction::I32Store(MemArg {
+            align: 0,
+            offset: 0,
+        }),
         Instruction::Loop(vec![
             Instruction::I32Load(MemArg {
                 align: 0,
@@ -23,7 +26,10 @@ fn main() {
                 offset: 0,
             }),
             Instruction::Call(0),
-            Instruction::I32Store(0),
+            Instruction::I32Store(MemArg {
+                align: 0,
+                offset: 0,
+            }),
         ]),
     ];
 
