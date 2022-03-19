@@ -99,11 +99,9 @@ impl Machine {
                 Instruction::I32Const(value) => self.stack.push(*value),
 
                 // TODO: Load/Store indirect (maybe to support arrays? first implement loops and conditionals?)
-                Instruction::I32Load(memarg) => {
-                    self.stack.push(self.memory[memarg.offset as usize])
-                }
+                Instruction::I32Load(memarg) => self.stack.push(self.memory[memarg.offset]),
                 Instruction::I32Store(memarg) => {
-                    self.memory[memarg.offset as usize] = self.stack.pop().unwrap()
+                    self.memory[memarg.offset] = self.stack.pop().unwrap()
                 }
 
                 Instruction::I32Add => {
@@ -132,12 +130,10 @@ impl Machine {
 
                 // TODO: Indirect addressing to support arrays?
                 // TODO: LocalSet?
-                Instruction::LocalGet(LocalIdx(address)) => {
-                    self.stack.push(locals[*address as usize])
-                }
+                Instruction::LocalGet(LocalIdx(address)) => self.stack.push(locals[*address]),
 
                 Instruction::Call(FuncIdx(function_index)) => {
-                    let function_index = *function_index as usize;
+                    let function_index = *function_index;
 
                     if function_index < module_functions.len() {
                         module_functions[function_index].call(
@@ -152,14 +148,12 @@ impl Machine {
                 }
 
                 Instruction::Return => return Some(ControlFlow::Return),
-                Instruction::Branch(LabelIdx(level)) => {
-                    return Some(ControlFlow::Branch(*level as usize))
-                }
+                Instruction::Branch(LabelIdx(level)) => return Some(ControlFlow::Branch(*level)),
                 Instruction::BranchIf(LabelIdx(level)) => {
                     let condition = self.stack.pop().unwrap();
 
                     if condition != 0 {
-                        return Some(ControlFlow::Branch(*level as usize));
+                        return Some(ControlFlow::Branch(*level));
                     }
                 }
 

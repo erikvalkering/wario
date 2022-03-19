@@ -101,6 +101,12 @@ impl Parse for u32 {
     }
 }
 
+impl Parse for usize {
+    fn parse(file: &mut File) -> ParseResult<Self> {
+        Ok(u32::parse(file)? as usize)
+    }
+}
+
 impl Parse for i32 {
     fn parse(file: &mut File) -> ParseResult<Self> {
         parse_leb128_i32(file)

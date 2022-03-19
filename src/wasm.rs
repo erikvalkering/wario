@@ -38,13 +38,13 @@ impl fmt::Debug for FuncType {
     }
 }
 
-pub struct TypeIdx(pub u32);
-pub struct FuncIdx(pub u32);
-pub struct TableIdx(pub u32);
-pub struct MemIdx(pub u32);
-pub struct GlobalIdx(pub u32);
-pub struct LocalIdx(pub u32);
-pub struct LabelIdx(pub u32);
+pub struct TypeIdx(pub usize);
+pub struct FuncIdx(pub usize);
+pub struct TableIdx(pub usize);
+pub struct MemIdx(pub usize);
+pub struct GlobalIdx(pub usize);
+pub struct LocalIdx(pub usize);
+pub struct LabelIdx(pub usize);
 
 impl fmt::Debug for TypeIdx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -161,8 +161,8 @@ pub enum BlockType {
 
 #[derive(Debug)]
 pub struct MemArg {
-    pub align: u32,
-    pub offset: u32,
+    pub align: usize,
+    pub offset: usize,
 }
 
 #[derive(Debug)]
