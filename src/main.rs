@@ -1,5 +1,5 @@
-use wario::vm::{ExternFunction, Instruction, Machine, ModuleFunction};
-use wario::wasm::{BlockType, FuncIdx, LabelIdx, LocalIdx, MemArg};
+use wario::vm::{ExternFunction, Machine, ModuleFunction};
+use wario::wasm::{BlockType, FuncIdx, Instruction, LabelIdx, LocalIdx, MemArg};
 
 fn main() {
     // int i = 0;

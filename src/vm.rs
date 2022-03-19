@@ -1,22 +1,4 @@
-use super::wasm::{BlockType, FuncIdx, LabelIdx, LocalIdx, MemArg};
-
-#[derive(Debug)]
-pub enum Instruction {
-    I32Const(i32),           // TODO: can be replaced with wasm::Instruction
-    I32Load(MemArg),         // TODO: can be replaced with wasm::Instruction
-    I32Store(MemArg),        // TODO: can be replaced with wasm::Instruction
-    I32Add,                  // TODO: can be replaced with wasm::Instruction
-    I32Sub,                  // TODO: can be replaced with wasm::Instruction
-    I32Mul,                  // TODO: can be replaced with wasm::Instruction
-    I32Eq,                   // TODO: can be replaced with wasm::Instruction
-    LocalGet(LocalIdx),      // TODO: can be replaced with wasm::Instruction
-    Call(FuncIdx),           // TODO: can be replaced with wasm::Instruction
-    Return,                             // TODO: can be replaced with wasm::Instruction
-    Branch(LabelIdx),                   // TODO: can be replaced with wasm::Instruction
-    BranchIf(LabelIdx),                 // TODO: can be replaced with wasm::Instruction
-    Block(BlockType, Vec<Instruction>), // TODO: can be replaced with wasm::Instruction
-    Loop(BlockType, Vec<Instruction>),  // TODO: can be replaced with wasm::Instruction
-}
+use super::wasm::{FuncIdx, Instruction, LabelIdx, LocalIdx};
 
 #[derive(Debug)]
 pub enum ControlFlow {
@@ -206,6 +188,8 @@ impl Machine {
                         }
                     }
                 },
+
+                _ => panic!("Unsupported instruction encountered: {:?}", instruction),
             }
 
             if self.debugging {
@@ -220,7 +204,8 @@ impl Machine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::vm::{ExternFunction, Machine, ModuleFunction};
+    use crate::wasm::{BlockType, FuncIdx, Instruction, LabelIdx, LocalIdx, MemArg};
 
     #[test]
     fn constant() {
@@ -629,18 +614,18 @@ mod tests {
                     Instruction::I32Load(MemArg {
                         align: 0,
                         offset: 0,
-                }),
-                Instruction::I32Const(4),
-                Instruction::I32Eq,
-                Instruction::BranchIf(LabelIdx(1)),
-                Instruction::I32Const(42),
-                Instruction::I32Load(MemArg {
-                    align: 0,
-                    offset: 0,
-                }),
-                Instruction::I32Const(1),
-                Instruction::I32Add,
-                Instruction::I32Store(MemArg {
+                    }),
+                    Instruction::I32Const(4),
+                    Instruction::I32Eq,
+                    Instruction::BranchIf(LabelIdx(1)),
+                    Instruction::I32Const(42),
+                    Instruction::I32Load(MemArg {
+                        align: 0,
+                        offset: 0,
+                    }),
+                    Instruction::I32Const(1),
+                    Instruction::I32Add,
+                    Instruction::I32Store(MemArg {
                         align: 0,
                         offset: 0,
                     }),
