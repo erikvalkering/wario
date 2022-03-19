@@ -1,5 +1,5 @@
 use wario::vm::{ExternFunction, Instruction, Machine, ModuleFunction};
-use wario::wasm::{FuncIdx, LocalIdx, MemArg};
+use wario::wasm::{FuncIdx, LabelIdx, LocalIdx, MemArg};
 
 fn main() {
     // int i = 0;
@@ -49,11 +49,11 @@ fn main() {
             Instruction::I32Eq,
             Instruction::Block(vec![
                 Instruction::Block(vec![
-                    Instruction::BranchIf(0),
+                    Instruction::BranchIf(LabelIdx(0)),
                     Instruction::LocalGet(LocalIdx(0)),
                     Instruction::I32Const(1),
                     Instruction::I32Add,
-                    Instruction::Branch(1),
+                    Instruction::Branch(LabelIdx(1)),
                 ]),
                 Instruction::I32Const(0),
             ]),
