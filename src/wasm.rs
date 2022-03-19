@@ -89,7 +89,7 @@ impl fmt::Debug for LabelIdx {
 }
 
 #[derive(Debug)]
-pub enum ElemType {
+pub enum RefType {
     FuncRef,
 }
 
@@ -101,7 +101,7 @@ pub struct Limits {
 
 #[derive(Debug)]
 pub struct TableType {
-    pub elem_type: ElemType,
+    pub elem_type: RefType,
     pub limits: Limits,
 }
 

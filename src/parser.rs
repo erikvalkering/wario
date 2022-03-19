@@ -216,11 +216,11 @@ impl Parse for LabelIdx {
     }
 }
 
-impl Parse for ElemType {
+impl Parse for RefType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let result = match u8::parse(file)? {
             0x70 => Self::FuncRef,
-            elem_type => return Err(ParseErr::Err(format!("Invalid ElemType: {}", elem_type))),
+            elem_type => return Err(ParseErr::Err(format!("Invalid RefType: {}", elem_type))),
         };
 
         Ok(result)
@@ -247,7 +247,7 @@ impl Parse for Limits {
 impl Parse for TableType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let result = Self {
-            elem_type: ElemType::parse(file)?,
+            elem_type: RefType::parse(file)?,
             limits: Limits::parse(file)?,
         };
 
