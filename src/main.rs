@@ -1,5 +1,5 @@
 use wario::vm::{ExternFunction, Instruction, Machine, ModuleFunction};
-use wario::wasm::{FuncIdx, LabelIdx, LocalIdx, MemArg};
+use wario::wasm::{BlockType, FuncIdx, LabelIdx, LocalIdx, MemArg};
 
 fn main() {
     // int i = 0;
@@ -15,22 +15,25 @@ fn main() {
             align: 0,
             offset: 0,
         }),
-        Instruction::Loop(vec![
-            Instruction::I32Load(MemArg {
-                align: 0,
-                offset: 0,
-            }),
-            Instruction::Call(FuncIdx(1)),
-            Instruction::I32Load(MemArg {
-                align: 0,
-                offset: 0,
-            }),
-            Instruction::Call(FuncIdx(0)),
-            Instruction::I32Store(MemArg {
-                align: 0,
-                offset: 0,
-            }),
-        ]),
+        Instruction::Loop(
+            BlockType::Empty,
+            vec![
+                Instruction::I32Load(MemArg {
+                    align: 0,
+                    offset: 0,
+                }),
+                Instruction::Call(FuncIdx(1)),
+                Instruction::I32Load(MemArg {
+                    align: 0,
+                    offset: 0,
+                }),
+                Instruction::Call(FuncIdx(0)),
+                Instruction::I32Store(MemArg {
+                    align: 0,
+                    offset: 0,
+                }),
+            ],
+        ),
     ];
 
     // fn increment(value: i32) {
@@ -47,16 +50,22 @@ fn main() {
             Instruction::LocalGet(LocalIdx(0)),
             Instruction::I32Const(80),
             Instruction::I32Eq,
-            Instruction::Block(vec![
-                Instruction::Block(vec![
-                    Instruction::BranchIf(LabelIdx(0)),
-                    Instruction::LocalGet(LocalIdx(0)),
-                    Instruction::I32Const(1),
-                    Instruction::I32Add,
-                    Instruction::Branch(LabelIdx(1)),
-                ]),
-                Instruction::I32Const(0),
-            ]),
+            Instruction::Block(
+                BlockType::Empty,
+                vec![
+                    Instruction::Block(
+                        BlockType::Empty,
+                        vec![
+                            Instruction::BranchIf(LabelIdx(0)),
+                            Instruction::LocalGet(LocalIdx(0)),
+                            Instruction::I32Const(1),
+                            Instruction::I32Add,
+                            Instruction::Branch(LabelIdx(1)),
+                        ],
+                    ),
+                    Instruction::I32Const(0),
+                ],
+            ),
         ],
     };
 

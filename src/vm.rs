@@ -1,4 +1,4 @@
-use super::wasm::{FuncIdx, LabelIdx, LocalIdx, MemArg};
+use super::wasm::{BlockType, FuncIdx, LabelIdx, LocalIdx, MemArg};
 
 #[derive(Debug)]
 pub enum Instruction {
@@ -11,11 +11,11 @@ pub enum Instruction {
     I32Eq,                   // TODO: can be replaced with wasm::Instruction
     LocalGet(LocalIdx),      // TODO: can be replaced with wasm::Instruction
     Call(FuncIdx),           // TODO: can be replaced with wasm::Instruction
-    Return,                  // TODO: can be replaced with wasm::Instruction
-    Branch(LabelIdx),        // TODO: can be replaced with wasm::Instruction
-    BranchIf(LabelIdx),      // TODO: can be replaced with wasm::Instruction
-    Block(Vec<Instruction>), // TODO: can be replaced with wasm::Instruction
-    Loop(Vec<Instruction>),  // TODO: can be replaced with wasm::Instruction
+    Return,                             // TODO: can be replaced with wasm::Instruction
+    Branch(LabelIdx),                   // TODO: can be replaced with wasm::Instruction
+    BranchIf(LabelIdx),                 // TODO: can be replaced with wasm::Instruction
+    Block(BlockType, Vec<Instruction>), // TODO: can be replaced with wasm::Instruction
+    Loop(BlockType, Vec<Instruction>),  // TODO: can be replaced with wasm::Instruction
 }
 
 #[derive(Debug)]
@@ -181,7 +181,7 @@ impl Machine {
                     }
                 }
 
-                Instruction::Block(block_code) => {
+                Instruction::Block(_, block_code) => {
                     match self.invoke(block_code, module_functions, extern_functions, locals) {
                         None => {}
 
@@ -194,7 +194,7 @@ impl Machine {
                     }
                 }
 
-                Instruction::Loop(loop_code) => loop {
+                Instruction::Loop(_, loop_code) => loop {
                     match self.invoke(loop_code, module_functions, extern_functions, locals) {
                         None => {}
 
@@ -492,11 +492,14 @@ mod tests {
     fn return_statement() {
         let code = vec![
             Instruction::I32Const(42),
-            Instruction::Block(vec![
-                Instruction::Return,
-                Instruction::I32Const(43),
-                Instruction::I32Const(44),
-            ]),
+            Instruction::Block(
+                BlockType::Empty,
+                vec![
+                    Instruction::Return,
+                    Instruction::I32Const(43),
+                    Instruction::I32Const(44),
+                ],
+            ),
             Instruction::I32Const(45),
         ];
 
@@ -535,11 +538,14 @@ mod tests {
     fn nested_break_single() {
         let code = vec![
             Instruction::I32Const(42),
-            Instruction::Block(vec![
-                Instruction::Branch(LabelIdx(0)),
-                Instruction::I32Const(43),
-                Instruction::I32Const(44),
-            ]),
+            Instruction::Block(
+                BlockType::Empty,
+                vec![
+                    Instruction::Branch(LabelIdx(0)),
+                    Instruction::I32Const(43),
+                    Instruction::I32Const(44),
+                ],
+            ),
             Instruction::I32Const(45),
         ];
 
@@ -558,11 +564,14 @@ mod tests {
     fn nested_break_double() {
         let code = vec![
             Instruction::I32Const(42),
-            Instruction::Block(vec![
-                Instruction::Branch(LabelIdx(1)),
-                Instruction::I32Const(43),
-                Instruction::I32Const(44),
-            ]),
+            Instruction::Block(
+                BlockType::Empty,
+                vec![
+                    Instruction::Branch(LabelIdx(1)),
+                    Instruction::I32Const(43),
+                    Instruction::I32Const(44),
+                ],
+            ),
             Instruction::I32Const(45),
         ];
 
@@ -614,10 +623,12 @@ mod tests {
                 align: 0,
                 offset: 0,
             }),
-            Instruction::Loop(vec![
-                Instruction::I32Load(MemArg {
-                    align: 0,
-                    offset: 0,
+            Instruction::Loop(
+                BlockType::Empty,
+                vec![
+                    Instruction::I32Load(MemArg {
+                        align: 0,
+                        offset: 0,
                 }),
                 Instruction::I32Const(4),
                 Instruction::I32Eq,
@@ -630,10 +641,11 @@ mod tests {
                 Instruction::I32Const(1),
                 Instruction::I32Add,
                 Instruction::I32Store(MemArg {
-                    align: 0,
-                    offset: 0,
-                }),
-            ]),
+                        align: 0,
+                        offset: 0,
+                    }),
+                ],
+            ),
         ];
 
         let module_functions = vec![];
