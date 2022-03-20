@@ -219,6 +219,7 @@ impl Parse for LabelIdx {
 impl Parse for RefType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let result = match u8::parse(file)? {
+            0x6F => Self::ExternRef,
             0x70 => Self::FuncRef,
             elem_type => return Err(ParseErr::Err(format!("Invalid RefType: {}", elem_type))),
         };

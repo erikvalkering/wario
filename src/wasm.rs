@@ -91,6 +91,7 @@ impl fmt::Debug for LabelIdx {
 #[derive(Debug)]
 pub enum RefType {
     FuncRef,
+    ExternRef,
 }
 
 #[derive(Debug)]
