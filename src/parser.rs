@@ -145,10 +145,10 @@ impl Parse for ValueType {
         let value_type = u8::parse(file)?;
 
         match value_type {
-            0x7f => Ok(ValueType::I32),
-            0x7e => Ok(ValueType::I64),
-            0x7d => Ok(ValueType::F32),
-            0x7c => Ok(ValueType::F64),
+            0x7f => Ok(Self::NumType(NumType::I32)),
+            0x7e => Ok(Self::NumType(NumType::I64)),
+            0x7d => Ok(Self::NumType(NumType::F32)),
+            0x7c => Ok(Self::NumType(NumType::F64)),
             _ => Err(ParseErr::Err(format!(
                 "Invalid value type encountered: {}",
                 value_type

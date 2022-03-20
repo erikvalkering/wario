@@ -16,11 +16,16 @@ impl fmt::Debug for Preamble {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub enum ValueType {
+pub enum NumType {
     I32,
     I64,
     F32,
     F64,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum ValueType {
+    NumType(NumType),
 }
 
 pub struct FuncType {
