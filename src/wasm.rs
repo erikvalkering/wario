@@ -137,6 +137,7 @@ pub struct MemArg {
     pub offset: usize,
 }
 
+// TODO: for a potential taxonomy: section 2.4.1 from spec
 #[derive(Debug)]
 pub enum Instruction {
     // Control instructions
