@@ -149,6 +149,8 @@ impl Parse for ValueType {
             0x7e => Ok(Self::NumType(NumType::I64)),
             0x7d => Ok(Self::NumType(NumType::F32)),
             0x7c => Ok(Self::NumType(NumType::F64)),
+            0x70 => Ok(Self::RefType(RefType::FuncRef)),
+            0x6F => Ok(Self::RefType(RefType::ExternRef)),
             _ => Err(ParseErr::Err(format!(
                 "Invalid value type encountered: {}",
                 value_type
@@ -218,10 +220,9 @@ impl Parse for LabelIdx {
 
 impl Parse for RefType {
     fn parse(file: &mut File) -> ParseResult<Self> {
-        let result = match u8::parse(file)? {
-            0x6F => Self::ExternRef,
-            0x70 => Self::FuncRef,
-            elem_type => return Err(ParseErr::Err(format!("Invalid RefType: {}", elem_type))),
+        let result = match ValueType::parse(file)? {
+            ValueType::RefType(value) => value,
+            elem_type => return Err(ParseErr::Err(format!("Invalid RefType: {:?}", elem_type))),
         };
 
         Ok(result)

@@ -26,6 +26,7 @@ pub enum NumType {
 #[derive(Debug, Copy, Clone)]
 pub enum ValueType {
     NumType(NumType),
+    RefType(RefType),
 }
 
 pub struct FuncType {
@@ -58,7 +59,7 @@ pub struct LocalIdx(pub usize);
 #[derive(Debug)]
 pub struct LabelIdx(pub usize);
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum RefType {
     FuncRef,
     ExternRef,
