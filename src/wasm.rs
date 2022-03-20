@@ -38,55 +38,20 @@ impl fmt::Debug for FuncType {
     }
 }
 
+#[derive(Debug)]
 pub struct TypeIdx(pub usize);
+#[derive(Debug)]
 pub struct FuncIdx(pub usize);
+#[derive(Debug)]
 pub struct TableIdx(pub usize);
+#[derive(Debug)]
 pub struct MemIdx(pub usize);
+#[derive(Debug)]
 pub struct GlobalIdx(pub usize);
+#[derive(Debug)]
 pub struct LocalIdx(pub usize);
+#[derive(Debug)]
 pub struct LabelIdx(pub usize);
-
-impl fmt::Debug for TypeIdx {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "TypeIdx({:?})", self.0)
-    }
-}
-
-impl fmt::Debug for FuncIdx {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "FuncIdx({:?})", self.0)
-    }
-}
-
-impl fmt::Debug for TableIdx {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "TableIdx({:?})", self.0)
-    }
-}
-
-impl fmt::Debug for MemIdx {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "MemIdx({:?})", self.0)
-    }
-}
-
-impl fmt::Debug for GlobalIdx {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "GlobalIdx({:?})", self.0)
-    }
-}
-
-impl fmt::Debug for LocalIdx {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "LocalIdx({:?})", self.0)
-    }
-}
-
-impl fmt::Debug for LabelIdx {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "LabelIdx({:?})", self.0)
-    }
-}
 
 #[derive(Debug)]
 pub enum RefType {
