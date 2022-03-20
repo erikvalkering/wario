@@ -23,7 +23,7 @@ impl<T: Parse> Parse for Vec<T> {
 
         let mut result_type = vec![];
         for _ in 0..n {
-            result_type.push(T::parse(file)?);
+            result_type.push(Parse::parse(file)?);
         }
 
         Ok(result_type)
@@ -121,8 +121,8 @@ impl Parse for f64 {
     }
 }
 
-impl Preamble {
-    fn parse(file: &mut File) -> ParseResult<Preamble> {
+impl Parse for Preamble {
+    fn parse(file: &mut File) -> ParseResult<Self> {
         let magic = <[u8; 4]>::parse(file)?;
         if &magic != b"\0asm" {
             return Err(ParseErr::Err("Invalid magic value".to_owned()));
@@ -247,8 +247,8 @@ impl Parse for Limits {
 impl Parse for TableType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         let result = Self {
-            elem_type: RefType::parse(file)?,
-            limits: Limits::parse(file)?,
+            elem_type: Parse::parse(file)?,
+            limits: Parse::parse(file)?,
         };
 
         Ok(result)
@@ -258,7 +258,7 @@ impl Parse for TableType {
 impl Parse for MemType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self {
-            limits: Limits::parse(file)?,
+            limits: Parse::parse(file)?,
         })
     }
 }
@@ -276,8 +276,8 @@ impl Parse for Mutability {
 impl Parse for GlobalType {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(Self {
-            value_type: ValueType::parse(file)?,
-            mutability: Mutability::parse(file)?,
+            value_type: Parse::parse(file)?,
+            mutability: Parse::parse(file)?,
         })
     }
 }
@@ -285,10 +285,10 @@ impl Parse for GlobalType {
 impl Parse for ImportDescriptor {
     fn parse(file: &mut File) -> ParseResult<Self> {
         Ok(match u8::parse(file)? {
-            0x00 => Self::Func(TypeIdx::parse(file)?),
-            0x01 => Self::Table(TableType::parse(file)?),
-            0x02 => Self::Memory(MemType::parse(file)?),
-            0x03 => Self::Global(GlobalType::parse(file)?),
+            0x00 => Self::Func(Parse::parse(file)?),
+            0x01 => Self::Table(Parse::parse(file)?),
+            0x02 => Self::Memory(Parse::parse(file)?),
+            0x03 => Self::Global(Parse::parse(file)?),
             id => {
                 return Err(ParseErr::Err(format!(
                     "Invalid import descriptor type: {}",
@@ -533,7 +533,7 @@ fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
 
 impl Module {
     pub fn parse(file: &mut File) -> Result<Module> {
-        let preamble = match Preamble::parse(file) {
+        let preamble = match Parse::parse(file) {
             Ok(x) => x,
             Err(ParseErr::Err(err)) => return Err(err),
             Err(ParseErr::Eof) => return Err("Unexpected end of file detected".to_owned()),
