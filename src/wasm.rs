@@ -203,6 +203,12 @@ pub struct Code {
     pub body: Vec<Instruction>,
 }
 
+#[derive(Debug)]
+pub struct Func {
+    pub ftype: FuncType,
+    pub code: Code,
+}
+
 pub struct Locals {
     pub n: u32,
     pub t: ValueType,
