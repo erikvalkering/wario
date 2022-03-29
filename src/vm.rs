@@ -1,4 +1,4 @@
-use super::wasm::{FuncIdx, Instruction, LabelIdx, LocalIdx};
+use super::wasm::{Func, FuncIdx, Instruction, LabelIdx, LocalIdx};
 
 #[derive(Debug)]
 pub enum ControlFlow {
@@ -28,25 +28,24 @@ pub enum ControlFlow {
 //
 //       Will this set the size of the local memory to 20?
 
-// TODO: Can be replaced with wasm::FuncType and wasm::Code (combine those into Function struct)
-pub struct ModuleFunction {
-    pub param_count: usize,
-    pub code: Vec<Instruction>,
-}
-
-impl ModuleFunction {
+impl Func {
     fn call(
         &self,
         machine: &mut Machine,
-        module_functions: &Vec<ModuleFunction>,
+        module_functions: &Vec<Func>,
         extern_functions: &mut Vec<ExternFunction>,
     ) {
         // pop param_count parameters off the stack
         let mut args = machine
             .stack
-            .split_off(machine.stack.len() - self.param_count);
+            .split_off(machine.stack.len() - self.ftype.parameter_types.len());
 
-        machine.invoke(&self.code, module_functions, extern_functions, &mut args);
+        machine.invoke(
+            &self.code.body,
+            module_functions,
+            extern_functions,
+            &mut args,
+        );
     }
 }
 
@@ -85,7 +84,7 @@ impl Machine {
     pub fn invoke(
         self: &mut Self,
         code: &Vec<Instruction>,
-        module_functions: &Vec<ModuleFunction>,
+        module_functions: &Vec<Func>,
         extern_functions: &mut Vec<ExternFunction>,
         locals: &mut Vec<i32>,
     ) -> Option<ControlFlow> {
