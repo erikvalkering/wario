@@ -1,5 +1,8 @@
-use wario::vm::{ExternFunction, Machine, ModuleFunction};
-use wario::wasm::{BlockType, FuncIdx, Instruction, LabelIdx, LocalIdx, MemArg};
+use wario::vm::{ExternFunction, Machine};
+use wario::wasm::{
+    BlockType, Code, Func, FuncIdx, FuncType, Instruction, LabelIdx, LocalIdx, MemArg, NumType,
+    ValueType,
+};
 
 fn main() {
     // int i = 0;
@@ -44,29 +47,36 @@ fn main() {
     //     value + 1
     //   }
     // }
-    let move_player = ModuleFunction {
-        param_count: 1,
-        code: vec![
-            Instruction::LocalGet(LocalIdx(0)),
-            Instruction::I32Const(80),
-            Instruction::I32Eq,
-            Instruction::Block(
-                BlockType::Empty,
-                vec![
-                    Instruction::Block(
-                        BlockType::Empty,
-                        vec![
-                            Instruction::BranchIf(LabelIdx(0)),
-                            Instruction::LocalGet(LocalIdx(0)),
-                            Instruction::I32Const(1),
-                            Instruction::I32Add,
-                            Instruction::Branch(LabelIdx(1)),
-                        ],
-                    ),
-                    Instruction::I32Const(0),
-                ],
-            ),
-        ],
+
+    let move_player = Func {
+        ftype: FuncType {
+            parameter_types: vec![ValueType::NumType(NumType::I32)],
+            result_types: vec![ValueType::NumType(NumType::I32)],
+        },
+        code: Code {
+            locals: vec![],
+            body: vec![
+                Instruction::LocalGet(LocalIdx(0)),
+                Instruction::I32Const(80),
+                Instruction::I32Eq,
+                Instruction::Block(
+                    BlockType::Empty,
+                    vec![
+                        Instruction::Block(
+                            BlockType::Empty,
+                            vec![
+                                Instruction::BranchIf(LabelIdx(0)),
+                                Instruction::LocalGet(LocalIdx(0)),
+                                Instruction::I32Const(1),
+                                Instruction::I32Add,
+                                Instruction::Branch(LabelIdx(1)),
+                            ],
+                        ),
+                        Instruction::I32Const(0),
+                    ],
+                ),
+            ],
+        },
     };
 
     let display_player = ExternFunction {
