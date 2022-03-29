@@ -23,6 +23,7 @@ pub enum NumType {
     F64,
 }
 
+// TODO: rename to ValType
 #[derive(Debug, Copy, Clone)]
 pub enum ValueType {
     NumType(NumType),

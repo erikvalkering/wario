@@ -50,6 +50,7 @@ impl Func {
 }
 
 pub struct ExternFunction<'a> {
+    // TODO: replace param_count with a FuncType
     pub param_count: usize,
     pub fun: Box<dyn FnMut(&[i32]) -> Option<i32> + 'a>,
 }
@@ -405,6 +406,7 @@ mod tests {
 
         let function = Func {
             ftype: FuncType {
+                // TODO: simplify ValueType::NumType(NumType::I32) -> NumType::I32
                 parameter_types: vec![
                     ValueType::NumType(NumType::I32),
                     ValueType::NumType(NumType::I32),
