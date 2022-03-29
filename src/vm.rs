@@ -197,8 +197,11 @@ impl Machine {
 
 #[cfg(test)]
 mod tests {
-    use crate::vm::{ExternFunction, Machine, ModuleFunction};
-    use crate::wasm::{BlockType, FuncIdx, Instruction, LabelIdx, LocalIdx, MemArg};
+    use crate::vm::{ExternFunction, Machine};
+    use crate::wasm::{
+        BlockType, Code, Func, FuncIdx, FuncType, Instruction, LabelIdx, LocalIdx, MemArg, NumType,
+        ValueType,
+    };
 
     #[test]
     fn constant() {
@@ -367,9 +370,15 @@ mod tests {
     fn call_module_function() {
         let code = vec![Instruction::Call(FuncIdx(0))];
 
-        let function = ModuleFunction {
-            param_count: 0,
-            code: vec![Instruction::I32Const(42)],
+        let function = Func {
+            ftype: FuncType {
+                parameter_types: vec![],
+                result_types: vec![ValueType::NumType(NumType::I32)],
+            },
+            code: Code {
+                locals: vec![],
+                body: vec![Instruction::I32Const(42)],
+            },
         };
 
         let module_functions = vec![function];
@@ -394,13 +403,22 @@ mod tests {
             Instruction::Call(FuncIdx(0)),
         ];
 
-        let function = ModuleFunction {
-            param_count: 2,
-            code: vec![
-                Instruction::LocalGet(LocalIdx(0)),
-                Instruction::LocalGet(LocalIdx(1)),
-                Instruction::I32Sub,
-            ],
+        let function = Func {
+            ftype: FuncType {
+                parameter_types: vec![
+                    ValueType::NumType(NumType::I32),
+                    ValueType::NumType(NumType::I32),
+                ],
+                result_types: vec![ValueType::NumType(NumType::I32)],
+            },
+            code: Code {
+                locals: vec![],
+                body: vec![
+                    Instruction::LocalGet(LocalIdx(0)),
+                    Instruction::LocalGet(LocalIdx(1)),
+                    Instruction::I32Sub,
+                ],
+            },
         };
 
         let module_functions = vec![function];
@@ -450,6 +468,7 @@ mod tests {
             Instruction::I32Const(b),
             Instruction::Call(FuncIdx(0)),
         ];
+
         let function = ExternFunction {
             param_count: 2,
             fun: Box::new(|args: &[i32]| Some(args[0] - args[1])),
