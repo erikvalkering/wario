@@ -23,3 +23,8 @@ fn parse_wasm() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn run_wasm() -> Result<()> {
+    ()
+}
