@@ -3,19 +3,21 @@ use std::fs::File;
 use wario::parser::Result;
 use wario::wasm;
 
-#[test]
-fn parse_wasm() -> Result<()> {
+fn open_file(filename: &str) -> File {
     use std::path::PathBuf;
-    let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", "mandelbrot.wasm"]
+    let path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "tests", filename]
         .iter()
         .collect();
 
-    let file = File::open(path);
-    let mut file = match file {
+    match File::open(path) {
         Ok(file) => file,
-        Err(err) => return Err(format!("Unable to open file: {}", err)),
+        Err(err) => panic!("Unable to open file: {}", err),
     };
+}
 
+#[test]
+fn parse_wasm() -> Result<()> {
+    let mut file = open_file("mandelbrot.wasm");
     let module = wasm::Module::parse(&mut file)?;
     println!("{:#?}", module);
 
