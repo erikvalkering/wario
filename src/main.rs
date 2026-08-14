@@ -12,7 +12,7 @@ fn main() {
     //   i++;
     // }
 
-    let code = vec![
+    let main_code = vec![
         Instruction::I32Const(0),
         Instruction::I32Store(MemArg {
             align: 0,
@@ -47,36 +47,39 @@ fn main() {
     //     value + 1
     //   }
     // }
+    let ftype=FuncType {
+        parameter_types: vec![ValueType::NumType(NumType::I32)],
+        result_types: vec![ValueType::NumType(NumType::I32)],
+    };
+
+    let code = Code {
+        locals: vec![],
+        body: vec![
+            Instruction::LocalGet(LocalIdx(0)),
+            Instruction::I32Const(80),
+            Instruction::I32Eq,
+            Instruction::Block(
+                BlockType::Empty,
+                vec![
+                    Instruction::Block(
+                        BlockType::Empty,
+                        vec![
+                            Instruction::BranchIf(LabelIdx(0)),
+                            Instruction::LocalGet(LocalIdx(0)),
+                            Instruction::I32Const(1),
+                            Instruction::I32Add,
+                            Instruction::Branch(LabelIdx(1)),
+                        ],
+                    ),
+                    Instruction::I32Const(0),
+                ],
+            ),
+        ],
+    };
 
     let move_player = Func {
-        ftype: FuncType {
-            parameter_types: vec![ValueType::NumType(NumType::I32)],
-            result_types: vec![ValueType::NumType(NumType::I32)],
-        },
-        code: Code {
-            locals: vec![],
-            body: vec![
-                Instruction::LocalGet(LocalIdx(0)),
-                Instruction::I32Const(80),
-                Instruction::I32Eq,
-                Instruction::Block(
-                    BlockType::Empty,
-                    vec![
-                        Instruction::Block(
-                            BlockType::Empty,
-                            vec![
-                                Instruction::BranchIf(LabelIdx(0)),
-                                Instruction::LocalGet(LocalIdx(0)),
-                                Instruction::I32Const(1),
-                                Instruction::I32Add,
-                                Instruction::Branch(LabelIdx(1)),
-                            ],
-                        ),
-                        Instruction::I32Const(0),
-                    ],
-                ),
-            ],
-        },
+        ftype:&ftype,
+        code: &code,
     };
 
     let display_player = ExternFunction {
@@ -94,5 +97,5 @@ fn main() {
     let mut machine = Machine::new();
     machine.debugging = false;
 
-    machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
+    machine.invoke(&main_code, &module_functions, &mut extern_functions, &mut locals);
 }

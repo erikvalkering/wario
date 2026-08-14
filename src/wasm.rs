@@ -30,6 +30,7 @@ pub enum ValueType {
     RefType(RefType),
 }
 
+#[derive( Clone)]
 pub struct FuncType {
     pub parameter_types: Vec<ValueType>,
     pub result_types: Vec<ValueType>,
@@ -205,11 +206,13 @@ pub struct Code {
 }
 
 #[derive(Debug)]
-pub struct Func {
-    pub ftype: FuncType,
-    pub code: Code,
+pub struct Func<'a> {
+    // pub name : &'a str,
+    pub ftype: &'a FuncType,
+    pub code: &'a Code,
 }
 
+// TODO: move to parser, as this one is not used anywhere but there
 pub struct Locals {
     pub n: u32,
     pub t: ValueType,
@@ -232,7 +235,7 @@ pub enum Section {
 }
 
 #[derive(Debug)]
-pub struct Module {
+pub struct Module<'a> {
     pub preamble: Preamble,
     pub types: Vec<FuncType>,
     pub imports: Vec<Import>,
@@ -242,4 +245,5 @@ pub struct Module {
     pub exports: Vec<Export>,
     pub codes: Vec<Code>,
     // TODO: Add funcs component (see section 2.5.3 from spec)
+    pub funcs: Vec<Func<'a>>,
 }

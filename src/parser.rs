@@ -533,7 +533,7 @@ fn parse_sections(file: &mut File) -> Result<Vec<Section>> {
     Ok(sections)
 }
 
-impl Module {
+impl<'a> Module<'a> {
     pub fn parse(file: &mut File) -> Result<Module> {
         let preamble = match Parse::parse(file) {
             Ok(x) => x,
@@ -550,6 +550,7 @@ impl Module {
             globals: vec![],
             exports: vec![],
             codes: vec![],
+            funcs: vec![],
         };
 
         for section in parse_sections(file)? {

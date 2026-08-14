@@ -1,9 +1,18 @@
-use super::wasm::{Func, FuncIdx, Instruction, LabelIdx, LocalIdx};
+use super::wasm::{Func, FuncIdx, Instruction, LabelIdx, LocalIdx,Module};
 
 #[derive(Debug)]
 pub enum ControlFlow {
     Return,
     Branch(usize),
+}
+
+impl Module<'_> {
+    pub fn func(&self, idx: FuncIdx) ->Func{
+        Func{
+            ftype:&self.types[idx.0],
+            code:&self.codes[idx.0],
+        }
+    }
 }
 
 // TODO: add all four datatypes: i32, i64, f32, f64
@@ -28,7 +37,7 @@ pub enum ControlFlow {
 //
 //       Will this set the size of the local memory to 20?
 
-impl Func {
+impl Func<'_> {
     fn call(
         &self,
         machine: &mut Machine,
@@ -369,17 +378,20 @@ mod tests {
 
     #[test]
     fn call_module_function() {
-        let code = vec![Instruction::Call(FuncIdx(0))];
+
+        let ftype = FuncType {
+            parameter_types: vec![],
+            result_types: vec![ValueType::NumType(NumType::I32)],
+        };
+
+        let code =Code {
+            locals: vec![],
+            body: vec![Instruction::I32Const(42)],
+        };
 
         let function = Func {
-            ftype: FuncType {
-                parameter_types: vec![],
-                result_types: vec![ValueType::NumType(NumType::I32)],
-            },
-            code: Code {
-                locals: vec![],
-                body: vec![Instruction::I32Const(42)],
-            },
+            ftype:&ftype,
+            code: &code,
         };
 
         let module_functions = vec![function];
@@ -388,6 +400,7 @@ mod tests {
 
         let mut machine = Machine::new();
 
+        let code = vec![Instruction::Call(FuncIdx(0))];
         machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
         assert_eq!(machine.stack, vec![42]);
@@ -398,36 +411,40 @@ mod tests {
         let a = 5;
         let b = 3;
 
-        let code = vec![
-            Instruction::I32Const(a),
-            Instruction::I32Const(b),
-            Instruction::Call(FuncIdx(0)),
-        ];
-
-        let function = Func {
-            ftype: FuncType {
-                // TODO: simplify ValueType::NumType(NumType::I32) -> NumType::I32
-                parameter_types: vec![
-                    ValueType::NumType(NumType::I32),
-                    ValueType::NumType(NumType::I32),
+        let ftype=FuncType {
+            // TODO: simplify ValueType::NumType(NumType::I32) -> NumType::I32
+            parameter_types: vec![
+                ValueType::NumType(NumType::I32),
+                ValueType::NumType(NumType::I32),
                 ],
                 result_types: vec![ValueType::NumType(NumType::I32)],
-            },
-            code: Code {
+            };
+
+            let code =   Code {
                 locals: vec![],
                 body: vec![
                     Instruction::LocalGet(LocalIdx(0)),
                     Instruction::LocalGet(LocalIdx(1)),
                     Instruction::I32Sub,
-                ],
-            },
-        };
+                    ],
+                };
 
-        let module_functions = vec![function];
-        let mut extern_functions = vec![];
-        let mut locals = vec![];
+                let function = Func {
+                    ftype: &ftype,
+                    code: &code,
+                };
 
-        let mut machine = Machine::new();
+                let module_functions = vec![function];
+                let mut extern_functions = vec![];
+                let mut locals = vec![];
+
+                let mut machine = Machine::new();
+
+                let code = vec![
+                    Instruction::I32Const(a),
+                    Instruction::I32Const(b),
+                    Instruction::Call(FuncIdx(0)),
+                ];
 
         machine.invoke(&code, &module_functions, &mut extern_functions, &mut locals);
 
